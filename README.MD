@@ -10,19 +10,25 @@ This guide explains how to build, deploy, and manage a Flask application in a Ku
 
 ## Initial Setup and Deployment
 
-### 1. Configure Docker Environment
+### 1. Start Minikube
+```bash
+# Start Minikube
+minikube start
+```
+
+### 2. Configure Docker Environment
 ```bash
 # Configure shell to use Minikube's Docker daemon
 eval $(minikube docker-env)
 ```
 
-### 2. Set Up Local Registry
+### 3. Set Up Local Registry
 ```bash
 # Start a local Docker registry
 docker run -d -p 5000:5000 --name registry registry:2
 ```
 
-### 3. Build and Push Docker Image
+### 4. Build and Push Docker Image
 ```bash
 # Build the Flask application image
 docker build -t flask-app:latest .
@@ -34,7 +40,13 @@ docker tag flask-app:latest localhost:5000/flask-app:latest
 docker push localhost:5000/flask-app:latest
 ```
 
-### 4. Deploy to Kubernetes
+### 5. Apply RBAC Configuration
+```bash
+# Apply RBAC configuration
+kubectl apply -f rbac.yaml
+```
+
+### 6. Deploy to Kubernetes
 ```bash
 # First-time deployment
 kubectl apply -f flask-app.yaml
@@ -43,8 +55,11 @@ kubectl apply -f flask-app.yaml
 kubectl rollout restart deployment flask-app
 ```
 
-### 5. Verify Deployment
+### 7. Verify Deployment
 ```bash
+# Check events in case of error
+kubectl get events
+
 # Check deployment status
 kubectl get deployments
 
@@ -55,7 +70,7 @@ kubectl get pods
 kubectl get services
 ```
 
-### 6. Access the Application
+### 8. Access the Application
 ```bash
 # Create a URL and open the service in browser
 minikube service flask-app-service
