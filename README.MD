@@ -72,8 +72,8 @@ kubectl get services
 
 ### 8. Access the Application
 ```bash
-# Create a URL and open the service in browser
-minikube service flask-app-service
+minikube service flask-app-1-service --url
+minikube service flask-app-2-service --url
 ```
 
 ## Monitoring and Troubleshooting
@@ -127,6 +127,43 @@ curl -X POST -H "Content-Type: application/json" \
 curl /deployment
 ```
 
+## Prometheus Integration
+
+### Install Helm
+```bash
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+### Add Prometheus Community Repository
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+### Install Prometheus
+```bash
+helm install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+```
+
+### Configure Prometheus
+```bash
+kubectl apply -f prometheus-config.yaml
+kubectl apply -f prometheus-deployment.yaml
+```
+
+### Access Prometheus
+```bash
+minikube service prometheus-service --url
+```
+
+### Port Forwarding for Prometheus Pushgateway
+```bash
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus-pushgateway,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9091
+```
+
 ## Cleanup
 ```bash
 # Delete deployment
@@ -145,3 +182,4 @@ minikube stop
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
+- [Prometheus Documentation](https://prometheus.io/docs/)

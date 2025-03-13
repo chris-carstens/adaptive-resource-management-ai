@@ -11,6 +11,9 @@ spec:
     metadata:
       labels:
         app: flask-app-1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
     spec:
       containers:
       - name: flask-app-1
@@ -43,6 +46,9 @@ spec:
     metadata:
       labels:
         app: flask-app-2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
     spec:
       containers:
       - name: flask-app-2

@@ -1,7 +1,7 @@
 from kubernetes import client, config
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 import numpy as np
-import time
+from prometheus_client import start_http_server, Counter, Histogram, generate_latest
 
 app = Flask(__name__)
 
@@ -59,24 +59,25 @@ def get_deployment():
             'status': 'error'
         }), 500
 
+# Define metrics
+MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
+MATRIX_DURATION = Histogram('matrix_multiply_duration_seconds', 'Time spent processing matrix multiplication')
+
+
 @app.route('/matrix-multiply', methods=['GET'])
 def matrix_multiply():
     try:
-        size = int(request.args.get('size', 1000))
-        matrix_a = np.random.rand(size, size)
-        matrix_b = np.random.rand(size, size)
-        
-        start_time = time.time()
-        result = np.dot(matrix_a, matrix_b)
-        end_time = time.time()
-        
-        time_taken = end_time - start_time
-        
+        MATRIX_REQUESTS.inc()
+        with MATRIX_DURATION.time():
+            size = int(request.args.get('size', 1000))
+            matrix_a = np.random.rand(size, size)
+            matrix_b = np.random.rand(size, size)
+            result = np.dot(matrix_a, matrix_b)
+            
         return jsonify({
             'message': 'Matrix multiplication successful',
             'status': 'success',
-            'result_shape': result.shape,
-            'time_taken': time_taken
+            'result_shape': result.shape
         })
     except Exception as e:
         return jsonify({
@@ -84,5 +85,12 @@ def matrix_multiply():
             'status': 'error'
         }), 500
 
+# Add metrics endpoint
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), mimetype='text/plain')
+
+
 if __name__ == '__main__':
+    start_http_server(8000)  # Prometheus metrics endpoint
     app.run(host='0.0.0.0', port=5000)

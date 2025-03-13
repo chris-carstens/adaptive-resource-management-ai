@@ -1,0 +1,10 @@
+alertmanager:
+  enabled: false
+
+server:
+  global:
+    scrape_interval: 15s
+  service:
+    type: NodePort
+  persistentVolume:
+    enabled: false
