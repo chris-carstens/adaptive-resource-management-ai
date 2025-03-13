@@ -1,5 +1,7 @@
 from kubernetes import client, config
 from flask import Flask, jsonify, request
+import numpy as np
+import time
 
 app = Flask(__name__)
 
@@ -50,6 +52,31 @@ def get_deployment():
             'replicas': deployment.spec.replicas,
             'available_replicas': deployment.status.available_replicas,
             'status': 'success'
+        })
+    except Exception as e:
+        return jsonify({
+            'message': str(e),
+            'status': 'error'
+        }), 500
+
+@app.route('/matrix-multiply', methods=['GET'])
+def matrix_multiply():
+    try:
+        size = int(request.args.get('size', 1000))
+        matrix_a = np.random.rand(size, size)
+        matrix_b = np.random.rand(size, size)
+        
+        start_time = time.time()
+        result = np.dot(matrix_a, matrix_b)
+        end_time = time.time()
+        
+        time_taken = end_time - start_time
+        
+        return jsonify({
+            'message': 'Matrix multiplication successful',
+            'status': 'success',
+            'result_shape': result.shape,
+            'time_taken': time_taken
         })
     except Exception as e:
         return jsonify({
