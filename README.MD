@@ -28,34 +28,44 @@ eval $(minikube docker-env)
 docker run -d -p 5000:5000 --name registry registry:2
 ```
 
-### 4. Build and Push Docker Image
+### 4. Build and Push Docker Images
 ```bash
-# Build the Flask application image
-docker build -t flask-app:latest .
+# Build the Flask application images
+docker build -t flask-app1:latest -f Dockerfile-app1 .
+docker build -t flask-app2:latest -f Dockerfile-app2 .
 
-# Tag the image for local registry
-docker tag flask-app:latest localhost:5000/flask-app:latest
+# Tag the images for local registry
+docker tag flask-app1:latest localhost:5000/flask-app1:latest
+docker tag flask-app2:latest localhost:5000/flask-app2:latest
 
-# Push the image to local registry
-docker push localhost:5000/flask-app:latest
+# Push the images to local registry
+docker push localhost:5000/flask-app1:latest
+docker push localhost:5000/flask-app2:latest
 ```
 
-### 5. Apply RBAC Configuration
+### 5. Set Up Shared Volume
+```bash
+# Create the shared volume and claim
+kubectl apply -f shared-volume.yaml
+```
+
+### 6. Apply RBAC Configuration
 ```bash
 # Apply RBAC configuration
 kubectl apply -f rbac.yaml
 ```
 
-### 6. Deploy to Kubernetes
+### 7. Deploy to Kubernetes
 ```bash
 # First-time deployment
 kubectl apply -f flask-app.yaml
 
 # For subsequent updates (only if deployment exists)
-kubectl rollout restart deployment flask-app
+kubectl rollout restart deployment flask-app-1
+kubectl rollout restart deployment flask-app-2
 ```
 
-### 7. Verify Deployment
+### 8. Verify Deployment
 ```bash
 # Check events in case of error
 kubectl get events
@@ -70,7 +80,7 @@ kubectl get pods
 kubectl get services
 ```
 
-### 8. Access the Application
+### 9. Access the Application
 ```bash
 minikube service flask-app-1-service --url
 minikube service flask-app-2-service --url

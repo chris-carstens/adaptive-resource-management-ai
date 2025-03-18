@@ -2,6 +2,7 @@ from kubernetes import client, config
 from flask import Flask, jsonify, request, Response
 import numpy as np
 from prometheus_client import start_http_server, Counter, Histogram, generate_latest
+import os
 
 app = Flask(__name__)
 
@@ -9,6 +10,9 @@ app = Flask(__name__)
 config.load_incluster_config() # Just for running inside the cluster
 api_client = client.ApiClient()
 apps_v1 = client.AppsV1Api()
+
+# Create a directory for shared data
+os.makedirs('/tmp/shared', exist_ok=True)
 
 @app.route('/')
 def hello_world():
@@ -62,22 +66,35 @@ def get_deployment():
 # Define metrics
 MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
 MATRIX_DURATION = Histogram('matrix_multiply_duration_seconds', 'Time spent processing matrix multiplication')
-
+MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplication operations')
+# MATRIX_OPS_RATE = Histogram('matrix_multiply_ops_per_second', 'Number of matrix operations per second')
 
 @app.route('/matrix-multiply', methods=['GET'])
 def matrix_multiply():
     try:
         MATRIX_REQUESTS.inc()
-        with MATRIX_DURATION.time():
+        with MATRIX_DURATION.time() as duration:
             size = int(request.args.get('size', 1000))
             matrix_a = np.random.rand(size, size)
             matrix_b = np.random.rand(size, size)
             result = np.dot(matrix_a, matrix_b)
             
+            # Calculate operations metrics
+            ops_count = size * size * size  # Number of multiply-add operations. Approximation
+            MATRIX_OPS.inc(ops_count)
+            
+            # MATRIX_OPS_RATE.observe(ops_count / duration)
+            
+            # Save the result to a shared location
+            np.save('/tmp/shared/matrix_result.npy', result)
+            
         return jsonify({
             'message': 'Matrix multiplication successful',
             'status': 'success',
-            'result_shape': result.shape
+            'result_shape': result.shape,
+            'result_saved': True,
+            'operations_performed': ops_count,
+            # 'operations_per_second': ops_per_second
         })
     except Exception as e:
         return jsonify({
