@@ -122,27 +122,48 @@ kubectl apply -f loki-deployment.yaml
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
-# Install Grafana
-helm install grafana grafana/grafana
+# Remove existing Grafana installation if exists
+helm uninstall grafana
 
-# Get Grafana admin password
-kubectl get secret grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+# Create dashboard ConfigMap
+kubectl apply -f grafana-dashboard.yaml
+
+# Install Grafana with dashboard provisioning
+helm install grafana grafana/grafana -f grafana-values.yaml
+
+# Wait for Grafana to be ready
+kubectl rollout status deployment grafana
+
+# Access Grafana UI
+minikube service grafana --url
+
+# Login credentials:
+# Username: admin
+# Password: admin123
 ```
 
 ### 4. Configure Grafana Data Sources
 1. Add Prometheus data source:
-   - URL: http://prometheus-server
-   - Port: 9090
+   - Name: Prometheus
+   - URL: http://prometheus-server:9090  # Internal Kubernetes DNS name
+   - Access: Server (Default)
+   - Scrape interval: 15s
+
+Note: Do NOT use the Minikube service URL for data sources. The service URL 
+(from `minikube service prometheus-server --url`) is only for external browser access
+to the Prometheus UI. Inside the cluster, services should use internal Kubernetes DNS names.
 
 2. Add Loki data source:
-   - URL: http://loki:3100
+   - Name: Loki
+   - URL: http://loki:3100  # Internal Kubernetes DNS name
+   - Access: Server (Default)
 
 ## Monitoring and Troubleshooting
 
 ### View Application Metrics
 ```bash
 # Access Prometheus UI
-minikube service prometheus-service --url
+minikube service prometheus-server --url
 
 # Access Grafana (if installed)
 minikube service grafana --url
@@ -220,6 +241,26 @@ kubectl delete -f flask-app.yaml
 
 # Stop Minikube
 minikube stop
+```
+
+## Full System Restart
+```bash
+# Delete all deployments
+kubectl delete -f flask-app.yaml
+kubectl delete -f prometheus-deployment.yaml
+kubectl delete -f loki-deployment.yaml
+
+# Reapply configurations in order
+kubectl apply -f shared-volume.yaml
+kubectl apply -f rbac.yaml
+kubectl apply -f prometheus-config.yaml
+kubectl apply -f prometheus-deployment.yaml
+kubectl apply -f loki-config.yaml
+kubectl apply -f loki-deployment.yaml
+kubectl apply -f flask-app.yaml
+
+# Verify all components are running
+kubectl get pods -w
 ```
 
 ## Troubleshooting

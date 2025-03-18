@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: matrix-operations-dashboard
+  labels:
+    grafana_dashboard: "true"
+data:
+  matrix-operations.json: |
+    {
+      "title": "Matrix Operations Dashboard",
+      "uid": "matrix-ops",
+      "version": 1,
+      "panels": [
+        {
+          "title": "Matrix Multiplication Operations",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "targets": [
+            {
+              "expr": "rate(matrix_multiply_ops_total[5m])",
+              "legendFormat": "App 1 Ops/sec"
+            },
+            {
+              "expr": "rate(second_matrix_multiply_ops_total[5m])",
+              "legendFormat": "App 2 Ops/sec"
+            }
+          ]
+        },
+        {
+          "title": "Matrix Multiplication Duration",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "targets": [
+            {
+              "expr": "rate(matrix_multiply_duration_seconds_sum[5m]) / rate(matrix_multiply_duration_seconds_count[5m])",
+              "legendFormat": "App 1 Avg Duration"
+            },
+            {
+              "expr": "rate(second_matrix_multiply_duration_seconds_sum[5m]) / rate(second_matrix_multiply_duration_seconds_count[5m])",
+              "legendFormat": "App 2 Avg Duration"
+            }
+          ]
+        }
+      ]
+    }
