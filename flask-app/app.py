@@ -3,6 +3,22 @@ from flask import Flask, jsonify, request, Response
 import numpy as np
 from prometheus_client import start_http_server, Counter, Histogram, generate_latest
 import os
+import logging
+import logging_loki
+import time  # Add this import at the top
+
+# Configure Loki logging
+logging_loki.emitter.LokiEmitter.level_tag = "level"
+handler = logging_loki.LokiHandler(
+    url="http://loki:3100/loki/api/v1/push",
+    tags={"application": "flask-app-1"},
+    version="1",
+)
+
+# Get the logger and add the Loki handler
+logger = logging.getLogger("flask-app-1")
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 app = Flask(__name__)
 
@@ -16,7 +32,7 @@ os.makedirs('/tmp/shared', exist_ok=True)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return 'Hello, World 1!'
 
 @app.route('/scale', methods=['POST'])
 def scale_deployment():
@@ -73,20 +89,30 @@ MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplicatio
 def matrix_multiply():
     try:
         MATRIX_REQUESTS.inc()
-        with MATRIX_DURATION.time() as duration:
+        start_time = time.time()
+        with MATRIX_DURATION.time():
             size = int(request.args.get('size', 1000))
             matrix_a = np.random.rand(size, size)
             matrix_b = np.random.rand(size, size)
             result = np.dot(matrix_a, matrix_b)
             
-            # Calculate operations metrics
-            ops_count = size * size * size  # Number of multiply-add operations. Approximation
+            ops_count = size * size * size
             MATRIX_OPS.inc(ops_count)
             
-            # MATRIX_OPS_RATE.observe(ops_count / duration)
-            
-            # Save the result to a shared location
             np.save('/tmp/shared/matrix_result.npy', result)
+            
+            duration = time.time() - start_time
+            # Add Loki logging
+            logger.info(
+                "Matrix multiplication completed",
+                extra={
+                    "tags": {
+                        "matrix_size": size,
+                        "ops_count": ops_count,
+                        "duration_seconds": duration
+                    }
+                }
+            )
             
         return jsonify({
             'message': 'Matrix multiplication successful',
@@ -94,9 +120,17 @@ def matrix_multiply():
             'result_shape': result.shape,
             'result_saved': True,
             'operations_performed': ops_count,
-            # 'operations_per_second': ops_per_second
+            'duration_seconds': duration
         })
     except Exception as e:
+        logger.error(
+            f"Matrix multiplication failed: {str(e)}",
+            extra={
+                "tags": {
+                    "error_type": type(e).__name__
+                }
+            }
+        )
         return jsonify({
             'message': str(e),
             'status': 'error'

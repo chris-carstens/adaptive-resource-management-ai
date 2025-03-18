@@ -86,13 +86,89 @@ minikube service flask-app-1-service --url
 minikube service flask-app-2-service --url
 ```
 
+## Monitoring Setup
+
+### 1. Set Up Prometheus
+```bash
+# Add Prometheus Community Repository
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Install Prometheus
+helm install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+```
+
+### 2. Set Up Loki
+```bash
+# Apply Loki configurations
+kubectl apply -f loki-config.yaml
+kubectl apply -f loki-deployment.yaml
+
+# Verify Loki deployment
+kubectl get pods -l app=loki
+
+# Stream logs in real-time
+kubectl logs -f <loki-pod-name>
+
+# Restart
+kubectl delete -f loki-deployment.yaml
+kubectl apply -f loki-config.yaml
+kubectl apply -f loki-deployment.yaml
+```
+
+### 3. Set Up Grafana (Optional)
+```bash
+# Add Grafana repository
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+# Install Grafana
+helm install grafana grafana/grafana
+
+# Get Grafana admin password
+kubectl get secret grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+```
+
+### 4. Configure Grafana Data Sources
+1. Add Prometheus data source:
+   - URL: http://prometheus-server
+   - Port: 9090
+
+2. Add Loki data source:
+   - URL: http://loki:3100
+
 ## Monitoring and Troubleshooting
+
+### View Application Metrics
+```bash
+# Access Prometheus UI
+minikube service prometheus-service --url
+
+# Access Grafana (if installed)
+minikube service grafana --url
+```
 
 ### View Application Logs
 ```bash
 # View logs in real-time
 kubectl logs --timestamps=true <pod-name>
+
+# Query Loki logs through Grafana
+# Example LogQL queries:
+# - {application="flask-app-1"}
+# - {application="flask-app-2"}
 ```
+
+### Metrics Available
+- Matrix multiplication requests: `matrix_multiply_requests_total`
+- Matrix multiplication duration: `matrix_multiply_duration_seconds`
+- Matrix operations: `matrix_multiply_ops_total`
+
+### Log Tags Available
+- matrix_size: Size of matrices being multiplied
+- ops_count: Number of multiplication operations
+- duration_seconds: Time taken for multiplication
+- error_type: Type of error (if any occurred)
 
 ### Common Commands
 ```bash
@@ -135,43 +211,6 @@ curl -X POST -H "Content-Type: application/json" \
 ```bash
 # Get current deployment information
 curl /deployment
-```
-
-## Prometheus Integration
-
-### Install Helm
-```bash
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
-```
-
-### Add Prometheus Community Repository
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-```
-
-### Install Prometheus
-```bash
-helm install prometheus prometheus-community/prometheus -f prometheus-values.yaml
-```
-
-### Configure Prometheus
-```bash
-kubectl apply -f prometheus-config.yaml
-kubectl apply -f prometheus-deployment.yaml
-```
-
-### Access Prometheus
-```bash
-minikube service prometheus-service --url
-```
-
-### Port Forwarding for Prometheus Pushgateway
-```bash
-export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus-pushgateway,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
-kubectl --namespace default port-forward $POD_NAME 9091
 ```
 
 ## Cleanup
