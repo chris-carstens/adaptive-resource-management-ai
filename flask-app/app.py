@@ -1,11 +1,12 @@
 from kubernetes import client, config
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, g
 import numpy as np
 from prometheus_client import start_http_server, Counter, Histogram, generate_latest
 import os
 import logging
 import logging_loki
 import time  # Add this import at the top
+from threading import Lock
 
 # Configure Loki logging
 logging_loki.emitter.LokiEmitter.level_tag = "level"
@@ -53,28 +54,32 @@ MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplicatio
 # MATRIX_OPS_RATE = Histogram('matrix_multiply_ops_per_second', 'Number of matrix operations per second')
 
 # # Global counter and lock for incremental IDs
-# request_counter = 0
-# counter_lock = Lock()
+request_counter = 0
+counter_lock = Lock()
 
-# @app.before_request
-# def before_request():
-#     global request_counter
-#     with counter_lock:
-#         request_counter += 1
-#         g.request_id = request_counter
-#     g.arrival_time = time.time()
-#     logger.info(f"Request {g.request_id} arrived at {g.arrival_time}")
+@app.before_request
+def before_request():
+    global request_counter
+    with counter_lock:
+        request_counter += 1
+        g.request_id = request_counter
+    g.arrival_time = time.time()
+    flask_logger.info(f"Request {g.request_id} arrived at {g.arrival_time}")
 
-# @app.after_request
-# def after_request(response):
-#     # Log the completion of the request
-#     g.departure_time = time.time()
-#     logger.info(f"Request {g.request_id} completed with status {response.status_code} at {g.departure_time}")
-#     return response
+@app.after_request
+def after_request(response):
+    # Log the completion of the request
+    g.departure_time = time.time()
+    flask_logger.info(f"Request {g.request_id} completed with status {response.status_code} at {g.departure_time}")
+    return response
 
 @app.route('/matrix-multiply', methods=['GET'])
 def matrix_multiply():
     try:
+        # Add Loki logging
+        logger.info(
+            "Matrix initialization started",
+        )
         MATRIX_REQUESTS.inc()
         start_time = time.time()
         with MATRIX_DURATION.time():
@@ -99,6 +104,9 @@ def matrix_multiply():
                         "duration_seconds": duration
                     }
                 }
+            )
+            logger.info(
+                "Matrix initialization ended",
             )
             
         return jsonify({
