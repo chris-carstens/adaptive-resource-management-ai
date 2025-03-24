@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+pip-log.txt
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Kubernetes
+*.yaml
+*.yml
+
+# Development/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+logs/
+tmp/
+.DS_Store
+
+# Documentation
+*.md
+README*
+
+# Test files
+test/
+tests/
