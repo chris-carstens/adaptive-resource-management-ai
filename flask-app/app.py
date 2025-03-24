@@ -20,6 +20,17 @@ logger = logging.getLogger("flask-app-1")
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
+# Configure Flask logging
+# Comment or uncomment to vizualize the logs from loki or from flask
+flask_logger = logging.getLogger('werkzeug')
+flask_logger.setLevel(logging.INFO)
+flask_handler = logging.StreamHandler()
+flask_formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+flask_handler.setFormatter(flask_formatter)
+flask_logger.addHandler(handler)
+
 app = Flask(__name__)
 
 # Load Kubernetes configuration
@@ -32,58 +43,34 @@ os.makedirs('/tmp/shared', exist_ok=True)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World 1!'
+    return 'Hello, World!'
 
-@app.route('/scale', methods=['POST'])
-def scale_deployment():
-    try:
-        replicas = request.json.get('replicas', 1)
-        
-        deployment = apps_v1.read_namespaced_deployment(
-            name='flask-app',
-            namespace='default'
-        )
-        deployment.spec.replicas = replicas
-        apps_v1.patch_namespaced_deployment(
-            name='flask-app',
-            namespace='default',
-            body=deployment
-        )
-        
-        return jsonify({
-            'message': f'Deployment scaled to {replicas} replicas',
-            'status': 'success'
-        })
-    except Exception as e:
-        return jsonify({
-            'message': str(e),
-            'status': 'error'
-        }), 500
-
-@app.route('/deployment', methods=['GET'])
-def get_deployment():
-    try:
-        deployment = apps_v1.read_namespaced_deployment(
-            name='flask-app',
-            namespace='default'
-        )
-        
-        return jsonify({
-            'replicas': deployment.spec.replicas,
-            'available_replicas': deployment.status.available_replicas,
-            'status': 'success'
-        })
-    except Exception as e:
-        return jsonify({
-            'message': str(e),
-            'status': 'error'
-        }), 500
 
 # Define metrics
 MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
 MATRIX_DURATION = Histogram('matrix_multiply_duration_seconds', 'Time spent processing matrix multiplication')
 MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplication operations')
 # MATRIX_OPS_RATE = Histogram('matrix_multiply_ops_per_second', 'Number of matrix operations per second')
+
+# # Global counter and lock for incremental IDs
+# request_counter = 0
+# counter_lock = Lock()
+
+# @app.before_request
+# def before_request():
+#     global request_counter
+#     with counter_lock:
+#         request_counter += 1
+#         g.request_id = request_counter
+#     g.arrival_time = time.time()
+#     logger.info(f"Request {g.request_id} arrived at {g.arrival_time}")
+
+# @app.after_request
+# def after_request(response):
+#     # Log the completion of the request
+#     g.departure_time = time.time()
+#     logger.info(f"Request {g.request_id} completed with status {response.status_code} at {g.departure_time}")
+#     return response
 
 @app.route('/matrix-multiply', methods=['GET'])
 def matrix_multiply():
