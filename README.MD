@@ -24,6 +24,10 @@ eval $(minikube docker-env)
 
 ### 3. Set Up Local Registry
 ```bash
+docker stop registry
+
+docker rm registry
+
 # Start a local Docker registry
 docker run -d -p 5000:5000 --name registry registry:2
 ```
