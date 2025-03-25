@@ -277,3 +277,4 @@ kubectl get pods -w
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [Prometheus Documentation](https://prometheus.io/docs/)
+- [Agent Setup and Monitoring](README_AGENT.MD)
