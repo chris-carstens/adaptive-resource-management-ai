@@ -10,6 +10,19 @@ This guide explains how to build, deploy, and manage a Flask application in a Ku
 
 ## Initial Setup and Deployment
 
+### 0. Run Setup and Start Scripts
+```bash
+# Make scripts executable
+chmod +x flask-app/setup.sh
+chmod +x flask-app/restart.sh
+
+# Run initial setup script
+./setup.sh
+
+# For subsequent restarts/updates
+./restart.sh
+```
+
 ### 1. Start Minikube
 ```bash
 # Start Minikube

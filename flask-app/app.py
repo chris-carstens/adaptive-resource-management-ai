@@ -5,7 +5,7 @@ from prometheus_client import start_http_server, Counter, Histogram, generate_la
 import os
 import logging
 import logging_loki
-import time  # Add this import at the top
+import time
 from threading import Lock
 
 # Configure Loki logging
@@ -15,6 +15,10 @@ handler = logging_loki.LokiHandler(
     tags={"application": "flask-app-1"},
     version="1",
 )
+loki_formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+handler.setFormatter(loki_formatter)
 
 # Get the logger and add the Loki handler
 logger = logging.getLogger("flask-app-1")
@@ -26,10 +30,6 @@ logger.addHandler(handler)
 flask_logger = logging.getLogger('werkzeug')
 flask_logger.setLevel(logging.INFO)
 flask_handler = logging.StreamHandler()
-flask_formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-flask_handler.setFormatter(flask_formatter)
 flask_logger.addHandler(handler)
 
 app = Flask(__name__)
@@ -46,12 +46,10 @@ os.makedirs('/tmp/shared', exist_ok=True)
 def hello_world():
     return 'Hello, World!'
 
-
 # Define metrics
 MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
 MATRIX_DURATION = Histogram('matrix_multiply_duration_seconds', 'Time spent processing matrix multiplication')
 MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplication operations')
-# MATRIX_OPS_RATE = Histogram('matrix_multiply_ops_per_second', 'Number of matrix operations per second')
 
 # # Global counter and lock for incremental IDs
 request_counter = 0
