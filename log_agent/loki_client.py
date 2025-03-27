@@ -8,7 +8,6 @@ class LokiClient:
 
     def query_logs(self, query: str, minutes: float) -> list:
         try:
-            # Get current time and time window in UTC
             end_time = datetime.now()
             start_time = end_time - timedelta(minutes=minutes)
             
