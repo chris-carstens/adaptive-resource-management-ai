@@ -1,12 +1,13 @@
 from kubernetes import client, config
 from flask import Flask, jsonify, request, Response, g
 import numpy as np
-from prometheus_client import start_http_server, Counter, Histogram, generate_latest
+from prometheus_client import start_http_server, Counter, Histogram, Gauge, generate_latest
 import os
 import logging
 import logging_loki
 import time
 from threading import Lock
+import psutil
 
 # Configure Loki logging
 logging_loki.emitter.LokiEmitter.level_tag = "level"
@@ -44,14 +45,15 @@ os.makedirs('/tmp/shared', exist_ok=True)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return 'Hello, World!3'
 
 # Define metrics
 MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
 MATRIX_DURATION = Histogram('matrix_multiply_duration_seconds', 'Time spent processing matrix multiplication')
 MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplication operations')
+CPU_USAGE = Gauge('flask_app_cpu_percent', 'CPU usage percentage')
 
-# # Global counter and lock for incremental IDs
+# Global counter and lock for incremental IDs
 request_counter = 0
 counter_lock = Lock()
 
@@ -61,23 +63,24 @@ def before_request():
     with counter_lock:
         request_counter += 1
         g.request_id = request_counter
-    g.arrival_time = time.time()
-    flask_logger.info(f"Request {g.request_id} arrived at {g.arrival_time}")
+    flask_logger.info(f"ID: {g.request_id} request arrived")
 
 @app.after_request
 def after_request(response):
-    # Log the completion of the request
-    g.departure_time = time.time()
-    flask_logger.info(f"Request {g.request_id} completed with status {response.status_code} at {g.departure_time}")
+    cpu_percent = psutil.cpu_percent(interval=0.1)
+    CPU_USAGE.set(cpu_percent)
+
+    flask_logger.info(
+        f"CPU Usage: {cpu_percent}%"
+    )
+    flask_logger.info(
+        f"ID: {g.request_id} request completed with status {response.status_code}.%"
+    )
     return response
 
 @app.route('/matrix-multiply', methods=['GET'])
 def matrix_multiply():
     try:
-        # Add Loki logging
-        logger.info(
-            "Matrix initialization started",
-        )
         MATRIX_REQUESTS.inc()
         start_time = time.time()
         with MATRIX_DURATION.time():
@@ -92,9 +95,8 @@ def matrix_multiply():
             np.save('/tmp/shared/matrix_result.npy', result)
             
             duration = time.time() - start_time
-            # Add Loki logging
             logger.info(
-                "Matrix multiplication completed",
+                "Matrix multiplication completed in {duration} seconds",
                 extra={
                     "tags": {
                         "matrix_size": size,
@@ -103,10 +105,6 @@ def matrix_multiply():
                     }
                 }
             )
-            logger.info(
-                "Matrix initialization ended",
-            )
-            
         return jsonify({
             'message': 'Matrix multiplication successful',
             'status': 'success',

@@ -1,4 +1,5 @@
 #!/bin/bash
+eval $(minikube docker-env)
 
 # Step 4: Build and Push Docker Images
 echo "Building and pushing Docker images..."
