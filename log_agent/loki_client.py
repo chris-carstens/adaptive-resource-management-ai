@@ -36,3 +36,27 @@ class LokiClient:
         except Exception as e:
             print(f"Error fetching logs: {e}")
             return []
+
+    def get_last_cpu_usage(self, minutes: float = 1.0) -> float:
+        """Get the last CPU usage percentage from logs"""
+        try:
+            logs = self.query_logs('{logger="werkzeug"} |~ "CPU Usage:"', minutes=minutes)
+            if not logs:
+                return None
+                
+            # Get the last CPU usage log
+            for log in logs:
+                for value in log.get('values', []):
+                    message = value[1]
+                    if "CPU Usage:" in message:
+                        # Extract CPU percentage from log message
+                        try:
+                            cpu_str = message.split("CPU Usage:")[1].strip().rstrip('%')
+                            return float(cpu_str)
+                        except (ValueError, IndexError) as e:
+                            print(f"Error parsing CPU value: {e}")
+            
+            return None
+        except Exception as e:
+            print(f"Error getting CPU usage from logs: {e}")
+            return None

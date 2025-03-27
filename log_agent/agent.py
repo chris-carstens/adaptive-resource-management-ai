@@ -70,16 +70,20 @@ class LogAgent:
 
         completed_requests = len([r for r in request_times.values() if 'end' in r])
         requests_per_second = self._calculate_request_rate(completed_requests)
+        cpu_usage = self.loki_client.get_last_cpu_usage(minutes=self.time_window)
 
-        return {
+        metrics = {
             'timestamp': datetime.now().isoformat(),
             'time_window_minutes': self.time_window,
             'mean_request_time': f"{self._calculate_mean_request_time(request_times):.12f}s",
             'active_requests': len([r for r in request_times.values() if 'end' not in r]),
             'completed_requests': completed_requests,
             'requests_per_second': f"{requests_per_second:.10f}",
+            "latest_cpu_usage": f"{cpu_usage}%" if cpu_usage is not None else None,
             'request_times': formatted_times
         }
+
+        return metrics
 
     def run(self):
         while True:
