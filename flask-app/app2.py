@@ -46,7 +46,7 @@ def train_model_part2(base_dir=None):
     # Enable eager execution
     tf.config.run_functions_eagerly(True)
     
-    save_path = os.path.join(base_dir, 'shared_volume') if base_dir else 'shared_volume'
+    save_path = '/tmp/shared'
     
     # Load the preprocessed features
     train_features = np.load(f'{save_path}/train/features.npy')
@@ -66,7 +66,7 @@ def train_model_part2(base_dir=None):
 
     # Second half of the model
     model_part2 = Sequential()
-    model_part2.add(Dense(64, activation='relu', input_shape=(125,)))  # Updated input shape
+    model_part2.add(Dense(64, activation='relu', input_shape=(256,)))
     model_part2.add(Dense(32, activation='relu'))
     model_part2.add(Dense(1, activation='sigmoid'))
 
@@ -278,9 +278,10 @@ def train_part2():
         return jsonify({
             'status': 'success',
             'message': 'Second part training completed',
-            'training_time': result['training_time'],
-            'metrics': result['metrics'],
-            'history': result['history']
+            # Object of type float32 is not JSON serializable
+            # 'training_time': result['training_time'],
+            # 'metrics': result['metrics'],
+            # 'history': result['history']
         }), 200
 
     except Exception as e:
