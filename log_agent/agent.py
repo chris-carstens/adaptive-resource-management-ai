@@ -97,4 +97,4 @@ class LogAgent:
             time.sleep(CONFIG['loki']['query_interval'])
 
 if __name__ == "__main__":
-    LogAgent(time_window_minutes=1.0).run()
+    LogAgent(time_window_minutes=10.0).run()
