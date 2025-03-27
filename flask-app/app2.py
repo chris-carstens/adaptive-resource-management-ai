@@ -66,8 +66,7 @@ def train_model_part2(base_dir=None):
 
     # Second half of the model
     model_part2 = Sequential()
-    model_part2.add(Dense(64, activation='relu', input_shape=(256,)))
-    model_part2.add(Dense(32, activation='relu'))
+    model_part2.add(Dense(32, activation='relu', input_shape=(6272,)))
     model_part2.add(Dense(1, activation='sigmoid'))
 
     # Compile model with correct loss
@@ -269,22 +268,43 @@ def matrix_multiply():
             'status': 'error'
         }), 500
 
+def convert_numpy_types(obj):
+    if isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [convert_numpy_types(item) for item in obj]
+    return obj
+
 @app.route('/train/part2', methods=['GET'])
 def train_part2():
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         result = train_model_part2(current_dir)
         
+        # Convert NumPy types for JSON serialization
+        serializable_result = convert_numpy_types(result)
+        
         return jsonify({
             'status': 'success',
             'message': 'Second part training completed',
-            # Object of type float32 is not JSON serializable
-            # 'training_time': result['training_time'],
-            # 'metrics': result['metrics'],
-            # 'history': result['history']
+            'training_time': serializable_result['training_time'],
+            'metrics': serializable_result['metrics'],
+            'history': serializable_result['history']
         }), 200
 
     except Exception as e:
+        logger.error(
+            f"Model training failed: {str(e)}",
+            extra={
+                "tags": {
+                    "error_type": type(e).__name__
+                }
+            }
+        )
         return jsonify({
             'status': 'error',
             'message': str(e)

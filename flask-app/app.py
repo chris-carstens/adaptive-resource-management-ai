@@ -24,16 +24,12 @@ def ensure_directories(base_path):
     return base_path
 
 def train_model_part1(base_dir=None):
-    # First half of the model
     model_part1 = Sequential()
-    model_part1.add(Conv2D(32, (3,3), 1, activation='relu', input_shape=(64,64,3)))
+    model_part1.add(Conv2D(64, (3,3), 1, activation='relu', input_shape=(64,64,3)))
     model_part1.add(MaxPooling2D())
-    model_part1.add(Conv2D(64, (3,3), 1, activation='relu'))
-    model_part1.add(MaxPooling2D())
-    model_part1.add(Conv2D(128, (3,3), 1, activation='relu'))
+    model_part1.add(Conv2D(32, (3,3), 1, activation='relu'))
     model_part1.add(MaxPooling2D())
     model_part1.add(Flatten())
-    model_part1.add(Dense(256, activation='relu'))
 
     # Compile first model with correct metrics
     model_part1.compile(optimizer='adam', 
@@ -60,8 +56,8 @@ def train_model_part1(base_dir=None):
         raise Exception(error_msg)
 
     # Split data
-    train_size = int(len(Training)*.8 * 0.2) # TODO: INCREASE
-    test_size = int(len(Training)*.2 * 0.2) # TODO: INCREASE
+    train_size = int(len(Training)*.8)
+    test_size = int(len(Training)*.2)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
@@ -123,7 +119,7 @@ def train_model_part1(base_dir=None):
 
 # Configure Loki logging
 logging_loki.emitter.LokiEmitter.level_tag = "level"
-handler = logging_loki.LokiHandler(
+loki_handler = logging_loki.LokiHandler(
     url="http://loki:3100/loki/api/v1/push",
     tags={"application": "flask-app-1"},
     version="1",
@@ -131,19 +127,19 @@ handler = logging_loki.LokiHandler(
 loki_formatter = logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-handler.setFormatter(loki_formatter)
+loki_handler.setFormatter(loki_formatter)
 
 # Get the logger and add the Loki handler
 logger = logging.getLogger("flask-app-1")
 logger.setLevel(logging.INFO)
-logger.addHandler(handler)
+logger.addHandler(loki_handler)
 
 # Configure Flask logging
 # Comment or uncomment to vizualize the logs from loki or from flask
 flask_logger = logging.getLogger('werkzeug')
 flask_logger.setLevel(logging.INFO)
 flask_handler = logging.StreamHandler()
-flask_logger.addHandler(handler)
+flask_logger.addHandler(loki_handler)
 
 app = Flask(__name__)
 
@@ -252,7 +248,7 @@ def train_part1():
             'message': 'First part training completed',
             'training_time': result['training_time'],
             'processing_time': result['processing_time'],
-            'history': result['history']
+            # 'history': result['history']
         }), 200
 
     except Exception as e:
