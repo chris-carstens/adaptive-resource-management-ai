@@ -86,10 +86,41 @@ class LogAgent:
 
         return metrics  
 
+    def _format_metrics(self, metrics):
+        separator = "=" * 80
+        app_header = f"\n{separator}\n{' ' * 30}{metrics['application']}\n{separator}"
+        
+        # Format the basic metrics
+        basic_metrics = f"""
+Timestamp: {metrics['timestamp']}
+Time Window: {metrics['time_window_minutes']} minutes
+Latest CPU Usage registered: {metrics['latest_cpu_usage'] or 'N/A'}
+
+Performance Metrics:
+------------------
+Mean Request Time: {metrics['mean_request_time']}
+Active Requests: {metrics['active_requests']}
+Completed Requests: {metrics['completed_requests']}
+Requests per Second: {metrics['requests_per_second']}
+"""
+        
+        # Format the detailed request times
+        request_details = "\nDetailed Request Times:\n-------------------"
+        for req_id, times in metrics['request_times'].items():
+            if times['start'] and times['end']:
+                request_details += f"\nRequest {req_id}:"
+                request_details += f"\n  Start: {times['start']}"
+                request_details += f"\n  End: {times['end']}"
+        
+        return f"{app_header}{basic_metrics}{request_details}\n"
+
     def _collect_metrics(self):
-        print(self._collect_metrics_by_app("flask-app-1"))
-        print()
-        print(self._collect_metrics_by_app("flask-app-2"))
+        metrics_app1 = self._collect_metrics_by_app("flask-app-1")
+        metrics_app2 = self._collect_metrics_by_app("flask-app-2")
+        
+        print(self._format_metrics(metrics_app1))
+        print(self._format_metrics(metrics_app2))
+        print("=" * 80 + "\n")
 
     def run(self):
         while True:
