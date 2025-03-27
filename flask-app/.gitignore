@@ -29,6 +29,7 @@ venv/
 .env
 .venv
 ENV/
+.flask-venv/
 
 # IDE
 .idea/

@@ -18,6 +18,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 import time
 
+global dataset_path
+dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
+
 def train_model_part1(base_dir=None):
     print('HOLA')
     if base_dir:
@@ -27,12 +30,14 @@ def train_model_part1(base_dir=None):
     
     # First half of the model
     model_part1 = Sequential()
-    model_part1.add(Conv2D(250, (3,3), 1, activation='relu', input_shape=(250,250,3)))
+    model_part1.add(Conv2D(32, (3,3), 1, activation='relu', input_shape=(64,64,3)))
     model_part1.add(MaxPooling2D())
-    model_part1.add(Conv2D(125, (3,3), 1, activation='relu'))
+    model_part1.add(Conv2D(64, (3,3), 1, activation='relu'))
     model_part1.add(MaxPooling2D())
-    model_part1.add(Flatten())  # Add Flatten to reduce dimensions
-    model_part1.add(Dense(125, activation='relu'))  # Add Dense layer for intermediates
+    model_part1.add(Conv2D(128, (3,3), 1, activation='relu'))
+    model_part1.add(MaxPooling2D())
+    model_part1.add(Flatten())
+    model_part1.add(Dense(256, activation='relu'))
     print('HOL3')
 
     # Compile first model with correct metrics
@@ -50,29 +55,26 @@ def train_model_part1(base_dir=None):
         
         if not os.path.exists(training_path):
             error_msg = f"Training data not found at {training_path}"
-            logger.error(error_msg)
             raise FileNotFoundError(error_msg)
         print('HOL6')
         print('HOL6.1')
 
             
         # Load and preprocess data
-        # TODO: CHECK
         Training = tf.keras.utils.image_dataset_from_directory(
             training_path,
-            image_size=(16, 16)
+            image_size=(64, 64)
         )
         print('HOL7')
         Training = Training.map(lambda x,y: (x/255, y))
         print('HOL7.1')
     except Exception as e:
         error_msg = f"Failed to load dataset: {str(e)}"
-        logger.error(error_msg)
         raise Exception(error_msg)
 
     # Split data
-    train_size = int(len(Training)*.8 * 0.01) # TODO: INCREASE
-    test_size = int(len(Training)*.2 * 0.01) # TODO: INCREASE
+    train_size = int(len(Training)*.8 * 0.2) # TODO: INCREASE
+    test_size = int(len(Training)*.2 * 0.2) # TODO: INCREASE
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
@@ -132,6 +134,8 @@ def train_model_part1(base_dir=None):
         'processing_time': processing_time,
         'history': hist.history
     }
+
+
 
 # Configure Loki logging
 logging_loki.emitter.LokiEmitter.level_tag = "level"
@@ -280,7 +284,5 @@ def metrics():
 
 
 if __name__ == '__main__':
-    global dataset_path
-    dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
     start_http_server(8000)  # Prometheus metrics endpoint
     app.run(host='0.0.0.0', port=5000)

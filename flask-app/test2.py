@@ -1,17 +1,11 @@
 import numpy as np
-import tensorflow as tf
 import os
-from matplotlib import pyplot as plt
-import cv2
-from keras.preprocessing import image
-from keras.models import load_model
-from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.optimizers import AdamW
 import time
+import tensorflow as tf
+from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import AdamW
 
 class IntermediateDataset:
     def __init__(self, data_path):
@@ -38,6 +32,9 @@ class IntermediateDataset:
         )
 
 def train_model_part2(base_dir=None):
+    # Enable eager execution
+    tf.config.run_functions_eagerly(True)
+    
     save_path = os.path.join(base_dir, 'shared_volume') if base_dir else 'shared_volume'
     
     # Load the preprocessed features
@@ -46,13 +43,19 @@ def train_model_part2(base_dir=None):
     test_features = np.load(f'{save_path}/test/features.npy')
     test_labels = np.load(f'{save_path}/test/labels.npy')
     
+    # Validate dataset sizes
+    if len(train_features) == 0 or len(test_features) == 0:
+        raise ValueError("Empty dataset detected")
+    
+    print(f"Dataset sizes - Train: {len(train_features)}, Test: {len(test_features)}")
+    
     # Create datasets
     train_dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels)).batch(32)
     test_dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels)).batch(32)
 
     # Second half of the model
     model_part2 = Sequential()
-    model_part2.add(Dense(64, activation='relu', input_shape=(125,)))  # Updated input shape
+    model_part2.add(Dense(64, activation='relu', input_shape=(256,)))
     model_part2.add(Dense(32, activation='relu'))
     model_part2.add(Dense(1, activation='sigmoid'))
 
@@ -61,7 +64,12 @@ def train_model_part2(base_dir=None):
     optimizer = AdamW(learning_rate=learning_rate)
     model_part2.compile(optimizer=optimizer, 
                     loss=tf.keras.losses.BinaryCrossentropy(),
-                    metrics=['accuracy'])
+                    metrics=['accuracy'],
+                    run_eagerly=True)
+
+    # Validate datasets are not empty
+    for x, y in train_dataset.take(1):
+        print(f"First batch shapes - Features: {x.shape}, Labels: {y.shape}")
 
     # Add tensorboard callback
     logdir='logs_part2'
@@ -119,6 +127,5 @@ def train_model_part2(base_dir=None):
         },
         'history': hist.history
     }
-
-if __name__ == '__main__':
-    train_model_part2()
+current_dir = os.path.dirname(os.path.abspath(__file__))
+result = train_model_part2(current_dir)

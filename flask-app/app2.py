@@ -37,12 +37,15 @@ class IntermediateDataset:
         return tf.data.Dataset.from_generator(
             generator,
             output_signature=(
-                tf.TensorSpec(shape=(None, None, None, 125), dtype=tf.float32),
+                tf.TensorSpec(shape=(None, None, None, 256), dtype=tf.float32),
                 tf.TensorSpec(shape=(None,), dtype=tf.int32)
             )
         )
 
 def train_model_part2(base_dir=None):
+    # Enable eager execution
+    tf.config.run_functions_eagerly(True)
+    
     save_path = os.path.join(base_dir, 'shared_volume') if base_dir else 'shared_volume'
     
     # Load the preprocessed features
@@ -50,6 +53,12 @@ def train_model_part2(base_dir=None):
     train_labels = np.load(f'{save_path}/train/labels.npy')
     test_features = np.load(f'{save_path}/test/features.npy')
     test_labels = np.load(f'{save_path}/test/labels.npy')
+    
+    # Validate dataset sizes
+    if len(train_features) == 0 or len(test_features) == 0:
+        raise ValueError("Empty dataset detected")
+    
+    print(f"Dataset sizes - Train: {len(train_features)}, Test: {len(test_features)}")
     
     # Create datasets
     train_dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels)).batch(32)
@@ -66,7 +75,12 @@ def train_model_part2(base_dir=None):
     optimizer = AdamW(learning_rate=learning_rate)
     model_part2.compile(optimizer=optimizer, 
                     loss=tf.keras.losses.BinaryCrossentropy(),
-                    metrics=['accuracy'])
+                    metrics=['accuracy'],
+                    run_eagerly=True)
+
+    # Validate datasets are not empty
+    for x, y in train_dataset.take(1):
+        print(f"First batch shapes - Features: {x.shape}, Labels: {y.shape}")
 
     # Add tensorboard callback
     logdir='logs_part2'
