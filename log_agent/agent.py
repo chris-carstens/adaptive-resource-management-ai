@@ -34,11 +34,11 @@ class LogAgent:
 
     def _unix_to_datetime(self, unix_timestamp):
         return datetime.fromtimestamp(unix_timestamp).isoformat()
-
-    def _collect_metrics(self):
+    
+    def _collect_metrics_by_app(self, application):
         request_times = defaultdict(dict)
-        logs = self.loki_client.query_logs('{logger="werkzeug"}', minutes=self.time_window)
-        
+        logs = self.loki_client.query_logs(f'{{logger="werkzeug", application="{application}"}}', minutes=self.time_window)
+
         # Sort all log entries by timestamp
         sorted_logs = []
         for log in logs:
@@ -70,9 +70,10 @@ class LogAgent:
 
         completed_requests = len([r for r in request_times.values() if 'end' in r])
         requests_per_second = self._calculate_request_rate(completed_requests)
-        cpu_usage = self.loki_client.get_last_cpu_usage(minutes=self.time_window)
+        cpu_usage = self.loki_client.get_last_cpu_usage(minutes=self.time_window, application=application)
 
         metrics = {
+            'application': application,
             'timestamp': datetime.now().isoformat(),
             'time_window_minutes': self.time_window,
             'mean_request_time': f"{self._calculate_mean_request_time(request_times):.12f}s",
@@ -83,13 +84,16 @@ class LogAgent:
             'request_times': formatted_times
         }
 
-        return metrics
+        return metrics  
+
+    def _collect_metrics(self):
+        print(self._collect_metrics_by_app("flask-app-1"))
+        print()
+        print(self._collect_metrics_by_app("flask-app-2"))
 
     def run(self):
         while True:
-            metrics = self._collect_metrics()
-            if metrics:
-                print(f"Metrics: {metrics}")
+            self._collect_metrics()
             time.sleep(CONFIG['loki']['query_interval'])
 
 if __name__ == "__main__":

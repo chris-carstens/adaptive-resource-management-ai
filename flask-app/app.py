@@ -45,7 +45,7 @@ os.makedirs('/tmp/shared', exist_ok=True)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!3'
+    return 'Hello, World!'
 
 # Define metrics
 MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
