@@ -11,22 +11,12 @@ spec:
     metadata:
       labels:
         app: flask-app-1
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
     spec:
-      volumes:
-      - name: shared-data
-        persistentVolumeClaim:
-          claimName: shared-data-pvc
       containers:
       - name: flask-app-1
         image: localhost:5000/flask-app1:latest
         ports:
         - containerPort: 5000
-        volumeMounts:
-        - name: shared-data
-          mountPath: /tmp/shared
 ---
 apiVersion: v1
 kind: Service
@@ -53,22 +43,12 @@ spec:
     metadata:
       labels:
         app: flask-app-2
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
     spec:
-      volumes:
-      - name: shared-data
-        persistentVolumeClaim:
-          claimName: shared-data-pvc
       containers:
       - name: flask-app-2
         image: localhost:5000/flask-app2:latest
         ports:
         - containerPort: 5000
-        volumeMounts:
-        - name: shared-data
-          mountPath: /tmp/shared
 ---
 apiVersion: v1
 kind: Service

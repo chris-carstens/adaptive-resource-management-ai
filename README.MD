@@ -60,19 +60,13 @@ docker push localhost:5000/flask-app1:latest
 docker push localhost:5000/flask-app2:latest
 ```
 
-### 5. Set Up Shared Volume
-```bash
-# Create the shared volume and claim
-kubectl apply -f shared-volume.yaml
-```
-
-### 6. Apply RBAC Configuration
+### 5. Apply RBAC Configuration
 ```bash
 # Apply RBAC configuration
 kubectl apply -f rbac.yaml
 ```
 
-### 7. Deploy to Kubernetes
+### 6. Deploy to Kubernetes
 ```bash
 # First-time deployment
 kubectl apply -f flask-app.yaml
@@ -82,7 +76,7 @@ kubectl rollout restart deployment flask-app-1
 kubectl rollout restart deployment flask-app-2
 ```
 
-### 8. Verify Deployment
+### 7. Verify Deployment
 ```bash
 # Check events in case of error
 kubectl get events
@@ -97,11 +91,24 @@ kubectl get pods
 kubectl get services
 ```
 
-### 9. Access the Application
+### 8. Access the Application
 ```bash
 minikube service flask-app-1-service --url
 minikube service flask-app-2-service --url
 ```
+
+## Application Architecture
+
+The application consists of two Flask applications that communicate via HTTP requests:
+
+1. **Flask App 1**: Generates random matrices and performs matrix multiplication
+2. **Flask App 2**: Receives matrix data from App 1 via HTTP POST request and performs additional matrix operations
+
+The communication flow is:
+- User → App 1 (matrix-multiply endpoint)
+- App 1 → App 2 (HTTP POST to second-matrix-multiply endpoint)
+- App 2 → Response (processed results)
+- App 1 → Final response to user
 
 ## Monitoring Setup
 
@@ -268,7 +275,6 @@ kubectl delete -f prometheus-deployment.yaml
 kubectl delete -f loki-deployment.yaml
 
 # Reapply configurations in order
-kubectl apply -f shared-volume.yaml
 kubectl apply -f rbac.yaml
 kubectl apply -f prometheus-config.yaml
 kubectl apply -f prometheus-deployment.yaml

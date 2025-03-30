@@ -22,9 +22,6 @@ docker tag flask-app2:latest localhost:5000/flask-app2:latest
 docker push localhost:5000/flask-app1:latest
 docker push localhost:5000/flask-app2:latest
 
-echo "5. Setting up shared volume..."
-kubectl apply -f shared-volume.yaml
-
 echo "6. Applying RBAC configuration..."
 kubectl apply -f rbac.yaml
 

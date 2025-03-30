@@ -1,17 +1,16 @@
 from kubernetes import client, config
 from flask import Flask, jsonify, request, Response, g
 import numpy as np
-from prometheus_client import start_http_server, Counter, Histogram, Gauge, generate_latest
 import os
 import logging
 import logging_loki
 import time
 from threading import Lock
-import psutil
 import kagglehub
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten
+import requests
 
 global dataset_path
 dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
@@ -56,8 +55,8 @@ def train_model_part1(base_dir=None):
         raise Exception(error_msg)
 
     # Split data
-    train_size = int(len(Training)*.8)
-    test_size = int(len(Training)*.2)
+    train_size = int(len(Training)*.8 * 0.5)
+    test_size = int(len(Training)*.2 * 0.5)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
@@ -76,14 +75,8 @@ def train_model_part1(base_dir=None):
     training_time = time.time() - start_time
     print(f"First half training time: {training_time:.2f} seconds")
 
-    # Save and process results
-    save_path = '/tmp/shared'
-    ensure_directories(save_path)
-
-    model_part1.save(f'{save_path}/model_part1.keras')
-
-    # Generate and save intermediate outputs
-    def save_intermediate_outputs(dataset, output_path):
+    # Generate intermediate outputs directly (without saving to disk)
+    def generate_features(dataset):
         all_features = []
         all_labels = []
 
@@ -92,30 +85,24 @@ def train_model_part1(base_dir=None):
             all_features.append(features)
             all_labels.append(labels)
         
-        np.save(f'{output_path}/features.npy', np.concatenate(all_features))
-        np.save(f'{output_path}/labels.npy', np.concatenate(all_labels))
+        return np.concatenate(all_features), np.concatenate(all_labels)
 
     # Time the intermediate results generation
     start_time = time.time()
-    save_intermediate_outputs(train, f'/{save_path}/train')
-    save_intermediate_outputs(test, f'/{save_path}/test')
+    train_features, train_labels = generate_features(train)
+    test_features, test_labels = generate_features(test)
     processing_time = time.time() - start_time
     print(f"Feature generation time: {processing_time:.2f} seconds")
-
-    # Save timing information
-    timing_info = {
-        'training_time': training_time,
-        'processing_time': processing_time
-    }
-    np.save(f'/{save_path}/timing_part1.npy', timing_info)
     
     return {
         'training_time': training_time,
         'processing_time': processing_time,
+        'train_features': train_features,
+        'train_labels': train_labels,
+        'test_features': test_features,
+        'test_labels': test_labels,
         'history': hist.history
     }
-
-
 
 # Configure Loki logging
 logging_loki.emitter.LokiEmitter.level_tag = "level"
@@ -148,20 +135,9 @@ config.load_incluster_config() # Just for running inside the cluster
 api_client = client.ApiClient()
 apps_v1 = client.AppsV1Api()
 
-# Create shared directories at startup
-os.makedirs('/tmp/shared', exist_ok=True)
-os.makedirs('/tmp/shared/train', exist_ok=True)
-os.makedirs('/tmp/shared/test', exist_ok=True)
-
 @app.route('/')
 def hello_world():
     return 'Hello, World 1!'
-
-# Define metrics
-MATRIX_REQUESTS = Counter('matrix_multiply_requests_total', 'Total matrix multiplication requests')
-MATRIX_DURATION = Histogram('matrix_multiply_duration_seconds', 'Time spent processing matrix multiplication')
-MATRIX_OPS = Counter('matrix_multiply_ops_total', 'Total number of multiplication operations')
-CPU_USAGE = Gauge('flask_app_cpu_percent', 'CPU usage percentage')
 
 # Global counter and lock for incremental IDs
 request_counter = 0
@@ -177,12 +153,6 @@ def before_request():
 
 @app.after_request
 def after_request(response):
-    cpu_percent = psutil.cpu_percent(interval=0.1)
-    CPU_USAGE.set(cpu_percent)
-
-    flask_logger.info(
-        f"CPU Usage: {cpu_percent}%"
-    )
     flask_logger.info(
         f"ID: {g.request_id} request completed with status {response.status_code}.%"
     )
@@ -191,22 +161,26 @@ def after_request(response):
 @app.route('/matrix-multiply', methods=['GET'])
 def matrix_multiply():
     try:
-        MATRIX_REQUESTS.inc()
         start_time = time.time()
-        with MATRIX_DURATION.time():
-            size = int(request.args.get('size', 1000))
-            matrix_a = np.random.rand(size, size)
-            matrix_b = np.random.rand(size, size)
-            result = np.dot(matrix_a, matrix_b)
-            
-            ops_count = size * size * size
-            MATRIX_OPS.inc(ops_count)
-            
-            np.save('/tmp/shared/matrix_result.npy', result)
+        size = int(request.args.get('size', 1000))
+        matrix_a = np.random.rand(size, size)
+        matrix_b = np.random.rand(size, size)
+        result = np.dot(matrix_a, matrix_b)
+        
+        ops_count = size * size * size
+        
+        try:
+            # Convert numpy array to list for JSON serialization
+            result_list = result.tolist()
+            response = requests.post(
+                'http://flask-app-2-service:5000/second-matrix-multiply',
+                json={'matrix': result_list, 'size': size}
+            )
+            app2_result = response.json()
             
             duration = time.time() - start_time
             logger.info(
-                "Matrix multiplication completed in {duration} seconds",
+                f"Matrix multiplication completed in {duration} seconds",
                 extra={
                     "tags": {
                         "matrix_size": size,
@@ -215,14 +189,23 @@ def matrix_multiply():
                     }
                 }
             )
-        return jsonify({
-            'message': 'Matrix multiplication successful',
-            'status': 'success',
-            'result_shape': result.shape,
-            'result_saved': True,
-            'operations_performed': ops_count,
-            'duration_seconds': duration
-        })
+            
+            return jsonify({
+                'message': 'Matrix multiplication successful',
+                'status': 'success',
+                'initial_result_shape': list(result.shape),
+                'app2_result': app2_result,
+                'operations_performed': ops_count,
+                'duration_seconds': duration
+            })
+            
+        except requests.RequestException as e:
+            logger.error(f"Failed to communicate with app2: {str(e)}")
+            return jsonify({
+                'message': f'Failed to communicate with app2: {str(e)}',
+                'status': 'error'
+            }), 500
+            
     except Exception as e:
         logger.error(
             f"Matrix multiplication failed: {str(e)}",
@@ -243,26 +226,61 @@ def train_part1():
         current_dir = os.path.dirname(os.path.abspath(__file__))
         result = train_model_part1(current_dir)
         
-        return jsonify({
-            'status': 'success',
-            'message': 'First part training completed',
-            'training_time': result['training_time'],
-            'processing_time': result['processing_time'],
-            # 'history': result['history']
-        }), 200
+        # Prepare data to send to app2 (directly from memory, not from disk)
+        try:
+            # Convert arrays to lists for JSON serialization
+            payload = {
+                'part1_completed': True,
+                'part1_training_time': float(result['training_time']),
+                'part1_processing_time': float(result['processing_time']),
+                'train_features': result['train_features'].tolist(),
+                'train_labels': result['train_labels'].tolist(),
+                'test_features': result['test_features'].tolist(),
+                'test_labels': result['test_labels'].tolist()
+            }
+            
+            # Make POST request to app2
+            response = requests.post(
+                'http://flask-app-2-service:5000/train/part2',
+                json=payload
+            )
+            app2_result = response.json()
+        
+            
+            # Combine results from both parts
+            return jsonify({
+                'status': 'success',
+                'message': 'Full training pipeline completed',
+                'part1': {
+                    'training_time': result['training_time'],
+                    'processing_time': result['processing_time'],
+                },
+                'part2': app2_result
+            }), 200
+            
+        except Exception as e:
+            logger.error(f"Error preparing or sending data to app2: {str(e)}")
+            return jsonify({
+                'status': 'partial_success',
+                'message': f'First part training completed but error in data transfer: {str(e)}',
+                'training_time': result['training_time'],
+                'processing_time': result['processing_time'],
+            }), 200
 
     except Exception as e:
+        logger.error(
+            f"Model training failed: {str(e)}",
+            extra={
+                "tags": {
+                    "error_type": type(e).__name__
+                }
+            }
+        )
         return jsonify({
             'status': 'error',
             'message': str(e)
         }), 500
 
-# Add metrics endpoint
-@app.route('/metrics')
-def metrics():
-    return Response(generate_latest(), mimetype='text/plain')
-
 
 if __name__ == '__main__':
-    start_http_server(8000)  # Prometheus metrics endpoint
     app.run(host='0.0.0.0', port=5000)
