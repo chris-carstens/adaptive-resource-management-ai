@@ -1,7 +1,6 @@
 from kubernetes import client, config
-from flask import Flask, jsonify, request, Response, g
+from flask import Flask, jsonify, request, g
 import numpy as np
-import os
 import logging
 import logging_loki
 import time
@@ -222,7 +221,7 @@ def convert_numpy_types(obj):
         return [convert_numpy_types(item) for item in obj]
     return obj
 
-@app.route('/train/part2', methods=['POST'])
+@app.route('/run-fire-detector-2', methods=['POST'])
 def train_part2():
     try:
         # Get data from app1's POST request

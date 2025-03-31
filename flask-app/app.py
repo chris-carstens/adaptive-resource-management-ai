@@ -1,5 +1,5 @@
 from kubernetes import client, config
-from flask import Flask, jsonify, request, Response, g
+from flask import Flask, jsonify, request, g
 import numpy as np
 import os
 import logging
@@ -220,13 +220,12 @@ def matrix_multiply():
             'status': 'error'
         }), 500
 
-@app.route('/train/part1', methods=['GET'])
+@app.route('/run-fire-detector', methods=['GET'])
 def train_part1():
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         result = train_model_part1(current_dir)
         
-        # Prepare data to send to app2 (directly from memory, not from disk)
         try:
             # Convert arrays to lists for JSON serialization
             payload = {
@@ -241,7 +240,7 @@ def train_part1():
             
             # Make POST request to app2
             response = requests.post(
-                'http://flask-app-2-service:5000/train/part2',
+                'http://flask-app-2-service:5000/run-fire-detector-2',
                 json=payload
             )
             app2_result = response.json()

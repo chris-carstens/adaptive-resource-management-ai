@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ### 1. Port Forward APIs
 ```bash
 # Prometheus metrics
-kubectl port-forward service/prometheus-server 9090:9090
+kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 9090
 
 # Loki logs
 kubectl port-forward service/loki 3100:3100

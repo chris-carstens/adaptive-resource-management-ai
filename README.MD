@@ -114,12 +114,18 @@ The communication flow is:
 
 ### 1. Set Up Prometheus
 ```bash
-# Add Prometheus Community Repository
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+kubectl create namespace monitoring
 
-# Install Prometheus
-helm install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+  --set grafana.enabled=false \
+  --set alertmanager.enabled=false
+
+kubectl label pods -l app=flask-app-1 monitoring=true
+kubectl label pods -l app=flask-app-2 monitoring=true
+
+kubectl get pods -n monitoring
 ```
 
 ### 2. Set Up Loki
@@ -166,33 +172,10 @@ minikube service grafana --url
 # Password: admin123
 ```
 
-### 4. Configure Grafana Data Sources
-1. Add Prometheus data source:
-   - Name: Prometheus
-   - URL: http://prometheus-server:9090  # Internal Kubernetes DNS name
-   - Access: Server (Default)
-   - Scrape interval: 15s
-
-Note: Do NOT use the Minikube service URL for data sources. The service URL 
-(from `minikube service prometheus-server --url`) is only for external browser access
-to the Prometheus UI. Inside the cluster, services should use internal Kubernetes DNS names.
-
-2. Add Loki data source:
-   - Name: Loki
-   - URL: http://loki:3100  # Internal Kubernetes DNS name
-   - Access: Server (Default)
-
 ## Monitoring and Troubleshooting
 
 ### View Application Metrics
 ```bash
-# Access Prometheus UI
-minikube service prometheus-server --url
-
-# Access Grafana (if installed)
-minikube service grafana --url
-```
-
 ### View Application Logs
 ```bash
 # View logs in real-time
@@ -203,17 +186,6 @@ kubectl logs --timestamps=true <pod-name>
 # - {application="flask-app-1"}
 # - {application="flask-app-2"}
 ```
-
-### Metrics Available
-- Matrix multiplication requests: `matrix_multiply_requests_total`
-- Matrix multiplication duration: `matrix_multiply_duration_seconds`
-- Matrix operations: `matrix_multiply_ops_total`
-
-### Log Tags Available
-- matrix_size: Size of matrices being multiplied
-- ops_count: Number of multiplication operations
-- duration_seconds: Time taken for multiplication
-- error_type: Type of error (if any occurred)
 
 ### Common Commands
 ```bash
@@ -242,22 +214,6 @@ kubectl apply -f flask-app.yaml
 kubectl get pods -w
 ```
 
-## API Endpoints
-
-### Scale Deployment
-```bash
-# Scale to desired number of replicas
-curl -X POST -H "Content-Type: application/json" \
-     -d '{"replicas": 3}' \
-     /scale
-```
-
-### Get Deployment Status
-```bash
-# Get current deployment information
-curl /deployment
-```
-
 ## Cleanup
 ```bash
 # Delete deployment
@@ -271,13 +227,10 @@ minikube stop
 ```bash
 # Delete all deployments
 kubectl delete -f flask-app.yaml
-kubectl delete -f prometheus-deployment.yaml
 kubectl delete -f loki-deployment.yaml
 
 # Reapply configurations in order
 kubectl apply -f rbac.yaml
-kubectl apply -f prometheus-config.yaml
-kubectl apply -f prometheus-deployment.yaml
 kubectl apply -f loki-config.yaml
 kubectl apply -f loki-deployment.yaml
 kubectl apply -f flask-app.yaml

@@ -3,12 +3,14 @@ from datetime import datetime
 import re
 from collections import defaultdict
 from loki_client import LokiClient
+from prometheus_client import PrometheusClient
 from config import CONFIG
 
 class LogAgent:
     def __init__(self, time_window_minutes: float):
         self.time_window = time_window_minutes
         self.loki_client = LokiClient()
+        self.prometheus_client = PrometheusClient()
 
     def _extract_request_id(self, log_message):
         match = re.search(r'ID: (\d+)', log_message)
@@ -70,7 +72,10 @@ class LogAgent:
 
         completed_requests = len([r for r in request_times.values() if 'end' in r])
         requests_per_second = self._calculate_request_rate(completed_requests)
-        cpu_usage = self.loki_client.get_last_cpu_usage(minutes=self.time_window, application=application)
+
+        # Get all pod CPU usages for display
+        all_pod_cpu = self.prometheus_client.get_pod_cpu_usage()
+        pod_cpu_formatted = {pod: f"{usage:.2f}%" for pod, usage in all_pod_cpu.items()}
 
         metrics = {
             'application': application,
@@ -80,7 +85,7 @@ class LogAgent:
             'active_requests': len([r for r in request_times.values() if 'end' not in r]),
             'completed_requests': completed_requests,
             'requests_per_second': f"{requests_per_second:.10f}",
-            "latest_cpu_usage": f"{cpu_usage}%" if cpu_usage is not None else None,
+            "all_pod_cpu_usage": pod_cpu_formatted,
             'request_times': formatted_times
         }
 
@@ -94,7 +99,6 @@ class LogAgent:
         basic_metrics = f"""
 Timestamp: {metrics['timestamp']}
 Time Window: {metrics['time_window_minutes']} minutes
-Latest CPU Usage registered: {metrics['latest_cpu_usage'] or 'N/A'}
 
 Performance Metrics:
 ------------------
@@ -103,6 +107,10 @@ Active Requests: {metrics['active_requests']}
 Completed Requests: {metrics['completed_requests']}
 Requests per Second: {metrics['requests_per_second']}
 """
+        # Add Prometheus CPU usage section with raw query results
+        prometheus_metrics = "\nPrometheus CPU Usage (Query Results):\n----------------------------------"
+        for pod, usage in metrics['all_pod_cpu_usage'].items():
+            prometheus_metrics += f"\n{pod}: {usage}"
         
         # Format the detailed request times
         request_details = "\nDetailed Request Times:\n-------------------"
@@ -112,7 +120,7 @@ Requests per Second: {metrics['requests_per_second']}
                 request_details += f"\n  Start: {times['start']}"
                 request_details += f"\n  End: {times['end']}"
         
-        return f"{app_header}{basic_metrics}{request_details}\n"
+        return f"{app_header}{basic_metrics}{prometheus_metrics}{request_details}\n"
 
     def _collect_metrics(self):
         metrics_app1 = self._collect_metrics_by_app("flask-app-1")
@@ -125,7 +133,7 @@ Requests per Second: {metrics['requests_per_second']}
     def run(self):
         while True:
             self._collect_metrics()
-            time.sleep(CONFIG['loki']['query_interval'])
+            time.sleep(CONFIG['query_interval'])
 
 if __name__ == "__main__":
     LogAgent(time_window_minutes=10.0).run()
