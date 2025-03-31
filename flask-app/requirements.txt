@@ -7,3 +7,4 @@ kubernetes==26.1.0
 python-logging-loki==0.3.1
 typing-extensions>=3.6.6,<4.6.0
 requests>=2.28.0
+prometheus-client>=0.16.0
