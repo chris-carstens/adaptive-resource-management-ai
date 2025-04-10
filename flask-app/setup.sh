@@ -1,8 +1,4 @@
 #!/bin/bash
-
-echo "1. Starting Minikube..."
-minikube start
-
 echo "2. Configuring Docker environment..."
 eval $(minikube docker-env)
 

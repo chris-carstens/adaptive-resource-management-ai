@@ -17,9 +17,12 @@ chmod +x flask-app/setup.sh
 chmod +x flask-app/restart.sh
 
 # Run initial setup script
+minikube start
+eval $(minikube docker-env)
 ./setup.sh
 
 # For subsequent restarts/updates
+eval $(minikube docker-env)
 ./restart.sh
 ```
 

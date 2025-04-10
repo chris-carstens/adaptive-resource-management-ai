@@ -223,9 +223,7 @@ def matrix_multiply():
 @app.route('/run-fire-detector', methods=['GET'])
 def train_part1():
     try:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        result = train_model_part1(current_dir)
-        
+        result = train_model_part1()
         try:
             # Convert arrays to lists for JSON serialization
             payload = {
