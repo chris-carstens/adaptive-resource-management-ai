@@ -59,7 +59,6 @@ def train_model_part2_from_data(train_features, train_labels, test_features, tes
     )
 
     training_time = time.time() - start_time
-    print(f"Second half training time: {training_time:.2f} seconds")
 
     # Initialize metrics
     pre = Precision()
@@ -73,20 +72,11 @@ def train_model_part2_from_data(train_features, train_labels, test_features, tes
         re.update_state(labels, predictions)
         acc.update_state(labels, predictions)
 
-    print(f"\nModel Metrics:")
-    print(f"Precision: {pre.result().numpy():.4f}")
-    print(f"Recall: {re.result().numpy():.4f}")
-    print(f"Accuracy: {acc.result().numpy():.4f}")
-
     # Calculate total time including part1 if available
     total_time = training_time
     if part1_data:
         total_time += part1_data.get('part1_training_time', 0) + part1_data.get('part1_processing_time', 0)
-        print(f"\nTotal timing breakdown:")
-        print(f"First half training: {part1_data.get('part1_training_time', 0):.2f} seconds")
-        print(f"Feature generation: {part1_data.get('part1_processing_time', 0):.2f} seconds")
-        print(f"Second half training: {training_time:.2f} seconds")
-        print(f"Total time: {total_time:.2f} seconds")
+
 
     return {
         'training_time': training_time,
@@ -149,66 +139,8 @@ def after_request(response):
     return response
 
 @app.route('/')
-def hello_world():
-    return 'Hello, World 2!'
-
-@app.route('/second-matrix-multiply', methods=['POST'])
-def matrix_multiply():
-    try:
-        start_time = time.time()
-        
-        # Get matrix data from request
-        data = request.get_json()
-        if not data or 'matrix' not in data:
-            return jsonify({
-                'message': 'No matrix data provided',
-                'status': 'error'
-            }), 400
-            
-        # Convert received list back to numpy array
-        saved_matrix = np.array(data['matrix'])
-        size = saved_matrix.shape[0]
-        new_matrix = np.random.rand(size, size)
-        final_result = np.dot(saved_matrix, new_matrix)
-        
-        ops_count = size * size * size
-        
-        # Only save shape for response, not full array
-        result_shape = final_result.shape
-        
-        duration = time.time() - start_time
-        logger.info(
-            f"Second matrix multiplication completed in {duration} seconds",
-            extra={
-                "tags": {
-                    "matrix_size": size,
-                    "ops_count": ops_count,
-                    "duration_seconds": duration
-                }
-            }
-        )
-
-        return jsonify({
-            'message': 'Second matrix multiplication successful',
-            'status': 'success',
-            'input_shape': list(saved_matrix.shape),
-            'result_shape': list(result_shape),
-            'operations_performed': ops_count,
-            'duration_seconds': duration
-        })
-    except Exception as e:
-        logger.error(
-            f"Second matrix multiplication failed: {str(e)}",
-            extra={
-                "tags": {
-                    "error_type": type(e).__name__
-                }
-            }
-        )
-        return jsonify({
-            'message': str(e),
-            'status': 'error'
-        }), 500
+def health():
+    return 'App 2 is healthy!'
 
 def convert_numpy_types(obj):
     if isinstance(obj, np.floating):

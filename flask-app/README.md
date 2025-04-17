@@ -6,11 +6,11 @@ This guide explains how to build, deploy, and manage a Flask application in a Ku
 - Minikube installed
 - Docker installed
 - kubectl installed
-- Python and Flask installed
+- Python installed
 
 ## Initial Setup and Deployment
 
-### 0. Run Setup and Start Scripts
+### 1. Run Setup and Start Scripts
 ```bash
 # Make scripts executable
 chmod +x flask-app/setup.sh
@@ -26,60 +26,7 @@ eval $(minikube docker-env)
 ./restart.sh
 ```
 
-### 1. Start Minikube
-```bash
-# Start Minikube
-minikube start
-```
-
-### 2. Configure Docker Environment
-```bash
-# Configure shell to use Minikube's Docker daemon
-eval $(minikube docker-env)
-```
-
-### 3. Set Up Local Registry
-```bash
-docker stop registry
-
-docker rm registry
-
-# Start a local Docker registry
-docker run -d -p 5000:5000 --name registry registry:2
-```
-
-### 4. Build and Push Docker Images
-```bash
-# Build the Flask application images
-docker build -t flask-app1:latest -f Dockerfile-app1 .
-docker build -t flask-app2:latest -f Dockerfile-app2 .
-
-# Tag the images for local registry
-docker tag flask-app1:latest localhost:5000/flask-app1:latest
-docker tag flask-app2:latest localhost:5000/flask-app2:latest
-
-# Push the images to local registry
-docker push localhost:5000/flask-app1:latest
-docker push localhost:5000/flask-app2:latest
-```
-
-### 5. Apply RBAC Configuration
-```bash
-# Apply RBAC configuration
-kubectl apply -f rbac.yaml
-```
-
-### 6. Deploy to Kubernetes
-```bash
-# First-time deployment
-kubectl apply -f flask-app.yaml
-
-# For subsequent updates (only if deployment exists)
-kubectl rollout restart deployment flask-app-1
-kubectl rollout restart deployment flask-app-2
-```
-
-### 7. Verify Deployment
+### 2. Verify Deployment
 ```bash
 # Check events in case of error
 kubectl get events
@@ -94,24 +41,32 @@ kubectl get pods
 kubectl get services
 ```
 
-### 8. Access the Application
+### 3. Access the Application
 ```bash
-minikube service flask-app-1-service --url
-minikube service flask-app-2-service --url
+minikube service api-gateway-service --url
 ```
 
 ## Application Architecture
 
-The application consists of two Flask applications that communicate via HTTP requests:
+The application consists of three components that communicate via HTTP requests:
 
-1. **Flask App 1**: Generates random matrices and performs matrix multiplication
-2. **Flask App 2**: Receives matrix data from App 1 via HTTP POST request and performs additional matrix operations
+1. **API Gateway**: Routes and manages requests to the microservices
+2. **Flask App 1**: Handles the first part of the machine learning pipeline
+3. **Flask App 2**: Handles the second part of the machine learning pipeline
 
 The communication flow is:
-- User → App 1 (matrix-multiply endpoint)
-- App 1 → App 2 (HTTP POST to second-matrix-multiply endpoint)
-- App 2 → Response (processed results)
-- App 1 → Final response to user
+- User → API Gateway
+- API Gateway → App 1
+- App 1 processes request and sends data to App 2
+- App 2 completes processing and returns results
+- Results returned to user through the API Gateway
+
+## Gateway Endpoints
+
+The API Gateway provides the following endpoints:
+
+- `GET /health` - Health check endpoint
+- `GET /api/run-fire-detector` - Run the fire detection model training
 
 ## Monitoring Setup
 
@@ -147,32 +102,6 @@ kubectl logs -f <loki-pod-name>
 kubectl delete -f loki-deployment.yaml
 kubectl apply -f loki-config.yaml
 kubectl apply -f loki-deployment.yaml
-```
-
-### 3. Set Up Grafana (Optional)
-```bash
-# Add Grafana repository
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-
-# Remove existing Grafana installation if exists
-helm uninstall grafana
-
-# Create dashboard ConfigMap
-kubectl apply -f grafana-dashboard.yaml
-
-# Install Grafana with dashboard provisioning
-helm install grafana grafana/grafana -f grafana-values.yaml
-
-# Wait for Grafana to be ready
-kubectl rollout status deployment grafana
-
-# Access Grafana UI
-minikube service grafana --url
-
-# Login credentials:
-# Username: admin
-# Password: admin123
 ```
 
 ## Monitoring and Troubleshooting
@@ -246,6 +175,7 @@ kubectl get pods -w
 - If pods show `ImagePullBackOff`, check if the image was properly pushed to the local registry
 - If pods show `CrashLoopBackOff`, check the pod logs for application errors
 - If service is not accessible, verify the service configuration and pod labels match
+- If gateway fails to connect to services, check the service names and ports in environment variables
 
 ## Additional Resources
 - [Kubernetes Documentation](https://kubernetes.io/docs/)

@@ -22,7 +22,7 @@ def ensure_directories(base_path):
         os.makedirs(full_path, exist_ok=True)
     return base_path
 
-def train_model_part1(base_dir=None):
+def train_model_part1():
     model_part1 = Sequential()
     model_part1.add(Conv2D(64, (3,3), 1, activation='relu', input_shape=(64,64,3)))
     model_part1.add(MaxPooling2D())
@@ -43,12 +43,13 @@ def train_model_part1(base_dir=None):
         if not os.path.exists(training_path):
             error_msg = f"Training data not found at {training_path}"
             raise FileNotFoundError(error_msg)
-            
+        
         # Load and preprocess data
         Training = tf.keras.utils.image_dataset_from_directory(
             training_path,
             image_size=(64, 64)
         )
+
         Training = Training.map(lambda x,y: (x/255, y))
     except Exception as e:
         error_msg = f"Failed to load dataset: {str(e)}"
@@ -136,8 +137,8 @@ api_client = client.ApiClient()
 apps_v1 = client.AppsV1Api()
 
 @app.route('/')
-def hello_world():
-    return 'Hello, World 1!'
+def health():
+    return 'App 1 is healthy!'
 
 # Global counter and lock for incremental IDs
 request_counter = 0
@@ -158,69 +159,7 @@ def after_request(response):
     )
     return response
 
-@app.route('/matrix-multiply', methods=['GET'])
-def matrix_multiply():
-    try:
-        start_time = time.time()
-        size = int(request.args.get('size', 1000))
-        matrix_a = np.random.rand(size, size)
-        matrix_b = np.random.rand(size, size)
-        result = np.dot(matrix_a, matrix_b)
-        
-        ops_count = size * size * size
-        
-        try:
-            # Convert numpy array to list for JSON serialization
-            result_list = result.tolist()
-            response = requests.post(
-                'http://flask-app-2-service:5000/second-matrix-multiply',
-                json={'matrix': result_list, 'size': size}
-            )
-            app2_result = response.json()
-            
-            duration = time.time() - start_time
-            logger.info(
-                f"Matrix multiplication completed in {duration} seconds",
-                extra={
-                    "tags": {
-                        "matrix_size": size,
-                        "ops_count": ops_count,
-                        "duration_seconds": duration
-                    }
-                }
-            )
-            
-            return jsonify({
-                'message': 'Matrix multiplication successful',
-                'status': 'success',
-                'initial_result_shape': list(result.shape),
-                'app2_result': app2_result,
-                'operations_performed': ops_count,
-                'duration_seconds': duration
-            })
-            
-        except requests.RequestException as e:
-            logger.error(f"Failed to communicate with app2: {str(e)}")
-            return jsonify({
-                'message': f'Failed to communicate with app2: {str(e)}',
-                'status': 'error'
-            }), 500
-            
-    except Exception as e:
-        logger.error(
-            f"Matrix multiplication failed: {str(e)}",
-            extra={
-                "tags": {
-                    "error_type": type(e).__name__
-                }
-            }
-        )
-        return jsonify({
-            'message': str(e),
-            'status': 'error'
-        }), 500
-
-@app.route('/run-fire-detector', methods=['GET'])
+@app.route('/run-fire-detector', methods=['POST'])
 def train_part1():
     try:
         result = train_model_part1()
@@ -243,7 +182,6 @@ def train_part1():
             )
             app2_result = response.json()
         
-            
             # Combine results from both parts
             return jsonify({
                 'status': 'success',
