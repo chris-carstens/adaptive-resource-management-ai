@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 import requests
 import os
 
@@ -13,23 +13,16 @@ def health():
 
 @app.route('/run-fire-detector', methods=['POST'])
 def gateway():
-    try:
-        app1_response = requests.post(f"{APP1_URL}/run-fire-detector")
-        app1_data = app1_response.json()
+    app1_response = requests.post(f"{APP1_URL}/run-fire-detector-1")
+    app1_data = app1_response.json()
         
-        app2_response = requests.post(
-            f"{APP2_URL}/run-fire-detector-2",
-            json=app1_data
-        )
-        
-        return jsonify(app2_response.json())
-        
-    except requests.RequestException as e:
-        return jsonify({
-            "status": "error",
-            "message": f"Gateway request failed: {str(e)}"
-        }), 500
+    app2_response = requests.post(
+        f"{APP2_URL}/run-fire-detector-2",
+        json=app1_data
+    )
+
+    return jsonify(app2_response.json())
+
 
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5050))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 5050)))

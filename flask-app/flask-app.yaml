@@ -11,6 +11,7 @@ spec:
     metadata:
       labels:
         app: flask-app-1
+        monitoring: "true"
     spec:
       containers:
       - name: flask-app-1
@@ -43,6 +44,7 @@ spec:
     metadata:
       labels:
         app: flask-app-2
+        monitoring: "true"
     spec:
       containers:
       - name: flask-app-2
@@ -75,6 +77,7 @@ spec:
     metadata:
       labels:
         app: api-gateway
+        monitoring: "true"
     spec:
       containers:
       - name: api-gateway
@@ -84,26 +87,6 @@ spec:
           name: http
         - containerPort: 8000
           name: metrics
-        env:
-        - name: APP1_URL
-          value: "http://flask-app-1-service:5000"
-        - name: APP2_URL
-          value: "http://flask-app-2-service:5000"
-        - name: LOKI_URL
-          value: "http://loki:3100/loki/api/v1/push"
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "300m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5050
-          initialDelaySeconds: 30
-          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
