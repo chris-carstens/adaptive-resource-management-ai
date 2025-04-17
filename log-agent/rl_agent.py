@@ -1,6 +1,5 @@
 import requests
 from config import CONFIG
-from loki_client import LokiClient
 
 class RLAgentClient:
     def __init__(self, metrics, n_replicas):
