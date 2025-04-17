@@ -83,7 +83,7 @@ spec:
       - name: api-gateway
         image: localhost:5000/flask-app-gateway:latest
         ports:
-        - containerPort: 5050
+        - containerPort: 5000
           name: http
         - containerPort: 8000
           name: metrics
@@ -99,8 +99,8 @@ spec:
     app: api-gateway
   ports:
   - name: http
-    port: 5050
-    targetPort: 5050
+    port: 5000
+    targetPort: 5000
   - name: metrics
     port: 8000
     targetPort: 8000
