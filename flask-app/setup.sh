@@ -31,8 +31,3 @@ echo "6. Waiting for services to be ready..."
 kubectl wait --for=condition=ready pod -l app=flask-app-1 --timeout=180s
 kubectl wait --for=condition=ready pod -l app=flask-app-2 --timeout=180s
 kubectl wait --for=condition=ready pod -l app=api-gateway --timeout=180s
-
-GATEWAY_URL=$(minikube service api-gateway-service --url | head -n 1)
-echo "7. API Gateway is accessible at: $GATEWAY_URL"
-
-echo "Setup complete! You can check the status with kubectl get pods"

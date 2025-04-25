@@ -27,7 +27,3 @@ echo "5. Waiting for restart to complete..."
 kubectl rollout status deployment/flask-app-1
 kubectl rollout status deployment/flask-app-2
 kubectl rollout status deployment/api-gateway
-
-echo "Deployment restarted successfully."
-GATEWAY_URL=$(minikube service api-gateway-service --url | head -n 1)
-echo "API Gateway is accessible at: $GATEWAY_URL"
