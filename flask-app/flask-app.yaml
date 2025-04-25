@@ -79,6 +79,7 @@ spec:
         app: api-gateway
         monitoring: "true"
     spec:
+      serviceAccountName: flask-app-sa
       containers:
       - name: api-gateway
         image: localhost:5000/flask-app-gateway:latest

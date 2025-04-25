@@ -65,7 +65,7 @@ The communication flow is:
 
 The API Gateway provides the following endpoints:
 
-- `GET /health` - Health check endpoint
+- `GET /` - Health check endpoint
 - `GET /api/run-fire-detector` - Run the fire detection model training
 
 ## Monitoring Setup

@@ -56,6 +56,10 @@ def after_request(response):
     )
     return response
 
+global dataset_path
+dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
+
+
 @app.route('/')
 def health():
     return 'App 1 is healthy!'
@@ -100,12 +104,13 @@ def train_model_part1():
             image_size=(64, 64)
         )
         Training = Training.map(lambda x,y: (x/255, y))
+
     except Exception as e:
         error_msg = f"Failed to load dataset: {str(e)}"
         raise Exception(error_msg)
 
-    train_size = int(len(Training)*.8 * 0.5)
-    test_size = int(len(Training)*.2 * 0.5)
+    train_size = int(len(Training)*.8 * 0.2)
+    test_size = int(len(Training)*.2 * 0.2)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
@@ -113,8 +118,8 @@ def train_model_part1():
     logdir='logs_part1'
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
-    hist = model_part1.fit(train, 
-                          epochs=1, 
+    hist = model_part1.fit(train,
+                          epochs=1,
                           validation_data=test, 
                           callbacks=[tensorboard_callback])
 
@@ -142,7 +147,28 @@ def train_model_part1():
 
 
 if __name__ == '__main__':
-    global dataset_path
-    dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
-
     app.run(host='0.0.0.0', port=5000)
+
+# ## Metrics Explanation
+
+# This section provides a description of the key metrics used by the agent:
+
+# ### > `n_instances`
+
+# - **Definition**: The number of active instances or replicas of a specific computational resource.
+
+
+# ### > `pressure` (p)
+# - **Formula**: 
+# $$
+# \Large p = \frac{R}{\bar{R}}
+# $$
+
+# Where:
+#   - $R$ = observed response time
+#   - $\bar{R}$ = response time threshold or SLA
+
+
+# - **Interpretation**: It indicates how close the system is to violating its response time constraints:
+
+#   - $p < 1$:
