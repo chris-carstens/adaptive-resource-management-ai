@@ -9,7 +9,10 @@ CONFIG = {
         'url': os.getenv('PROMETHEUS_URL', 'http://localhost:9090'),
     },
     'rl_agent': {
-        'url': os.getenv('RL_AGENT_URL'),
+        'url': os.getenv('RL_AGENT_URL', 'http://localhost:5001'),
         'response_time_threshold': os.getenv('RESPONSE_TIME_THRESHOLD', 0.5),
+    },
+    'scale_kubernetes': {
+        'url': os.getenv('SCALE_KUBERNETES_URL', 'http://localhost:5000'),
     },
 }

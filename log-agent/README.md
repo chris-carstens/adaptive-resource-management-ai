@@ -17,12 +17,16 @@ kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 909
 
 # Loki logs
 kubectl port-forward service/loki 3100:3100
+
+# API Gateway
+kubectl port-forward service/api-gateway-service 5000:5000
 ```
 
 ### 2. Environment Variables
 ```bash
 export PROMETHEUS_URL="http://localhost:9090"
 export LOKI_URL="http://localhost:3100"
+export SCALE_KUBERNETES_URL="http://localhost:5000"
 ```
 
 ### 3. Run the Agent

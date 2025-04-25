@@ -4,6 +4,8 @@ import re
 from collections import defaultdict
 from loki_client import LokiClient
 from prometheus_client import PrometheusClient
+from rl_agent_client import RLAgentClient
+from scale_kubernetes_client import ScaleKubernetesClient
 from config import CONFIG
 
 class LogAgent:
@@ -11,6 +13,7 @@ class LogAgent:
         self.time_window = time_window_minutes
         self.loki_client = LokiClient()
         self.prometheus_client = PrometheusClient()
+        self.scale_kubernetes_client = ScaleKubernetesClient()
 
     def _extract_request_id(self, log_message):
         match = re.search(r'ID: (\d+)', log_message)
@@ -81,10 +84,10 @@ class LogAgent:
             'application': application,
             'timestamp': datetime.now().isoformat(),
             'time_window_minutes': self.time_window,
-            'mean_request_time': f"{self._calculate_mean_request_time(request_times):.12f}s",
+            'mean_request_time': self._calculate_mean_request_time(request_times),
             'active_requests': len([r for r in request_times.values() if 'end' not in r]),
             'completed_requests': completed_requests,
-            'requests_per_second': f"{requests_per_second:.10f}",
+            'requests_per_second': requests_per_second,
             "all_pod_cpu_usage": pod_cpu_formatted,
             'request_times': formatted_times
         }
@@ -130,10 +133,43 @@ Requests per Second: {metrics['requests_per_second']}
         print(self._format_metrics(metrics_app2))
         print("=" * 80 + "\n")
 
+        metrics = {
+            "flask-app-1": metrics_app1,
+            "flask-app-2": metrics_app2
+        }
+        return metrics
+
     def run(self):
         while True:
-            self._collect_metrics()
+            metrics = self._collect_metrics()
+
+            # Get the current status to determine current replicas
+            status = self.scale_kubernetes_client.get_scale_status()
+            print(f"Current scaling status: {status}")
+            app1_replicas = status.get('app1').get('instances')
+            app2_replicas = status.get('app2').get('instances')
+            
+            print(f"Current replicas - App1: {app1_replicas}, App2: {app2_replicas}")
+            
+            # Get scaling decisions from RL agent
+            app1_decision = RLAgentClient(metrics["flask-app-1"], n_replicas=app1_replicas).train()
+            app2_decision = RLAgentClient(metrics["flask-app-2"], n_replicas=app2_replicas).train()
+            
+            n_instances_app_1 = app1_decision.get("n_instances")
+            n_instances_app_2 = app2_decision.get("n_instances")
+            
+            # Only scale if there's a change needed
+            if n_instances_app_1 != app1_replicas:
+                print(f"Scaling app1 from {app1_replicas} to {n_instances_app_1} instances")
+                self.scale_kubernetes_client.scale_app("app1", n_instances_app_1)
+            
+            if n_instances_app_2 != app2_replicas:
+                print(f"Scaling app2 from {app2_replicas} to {n_instances_app_2} instances")
+                self.scale_kubernetes_client.scale_app("app2", n_instances_app_2)
+
             time.sleep(CONFIG['query_interval'])
+
+
 
 if __name__ == "__main__":
     LogAgent(time_window_minutes=10.0).run()
