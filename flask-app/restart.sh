@@ -22,8 +22,3 @@ echo "4. Restarting deployments..."
 kubectl rollout restart deployment flask-app-1
 kubectl rollout restart deployment flask-app-2
 kubectl rollout restart deployment api-gateway
-
-echo "5. Waiting for restart to complete..."
-kubectl rollout status deployment/flask-app-1
-kubectl rollout status deployment/flask-app-2
-kubectl rollout status deployment/api-gateway

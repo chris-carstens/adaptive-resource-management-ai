@@ -1,0 +1,200 @@
+{
+    "CloudResources": {
+        "computationalLayer1": {
+            "VM1": {
+                "description": "test",
+                "number": 10,
+                "cost": 1.0,
+                "memory": 100,
+                "n_cores": 1
+            }
+        },
+        "computationalLayer2": {
+            "VM2": {
+                "description": "test",
+                "number": 10,
+                "cost": 1.0,
+                "memory": 100,
+                "n_cores": 1
+            }
+        },
+        "computationalLayer3": {
+            "VM3": {
+                "description": "test",
+                "number": 10,
+                "cost": 1.0,
+                "memory": 100,
+                "n_cores": 1
+            }
+        }
+    },
+    "Components": {
+        "c0": {
+            "s1": {
+                "h1": {
+                    "next": [
+                        "c1"
+                    ],
+                    "early_exit_probability": 0.0,
+                    "data_size": [
+                        1
+                    ],
+                    "memory": 1
+                }
+            }
+        },
+        "c1": {
+            "s1": {
+                "h1": {
+                    "next": [
+                        "c2"
+                    ],
+                    "early_exit_probability": 0.0,
+                    "data_size": [
+                        1
+                    ],
+                    "memory": 1
+                }
+            }
+        },
+        "c2": {
+            "s1": {
+                "h1": {
+                    "next": [],
+                    "early_exit_probability": 0.0,
+                    "data_size": [],
+                    "memory": 1
+                }
+            }
+        }
+    },
+    "CompatibilityMatrix": {
+        "c0": {
+            "h1": [
+                {
+                    "resource": "VM1",
+                    "memory": 50
+                }
+            ]
+        },
+        "c1": {
+            "h1": [
+                {
+                    "resource": "VM1",
+                    "memory": 50
+                },
+                {
+                    "resource": "VM2",
+                    "memory": 50
+                }
+            ]
+        },
+        "c2": {
+            "h1": [
+                {
+                    "resource": "VM1",
+                    "memory": 50
+                },
+                {
+                    "resource": "VM2",
+                    "memory": 50
+                },
+                {
+                    "resource": "VM3",
+                    "memory": 50
+                }
+            ]
+        }
+    },
+    "Performance": {
+        "c0": {
+            "h1": {
+                "VM1": {
+                    "model": "QTcloud",
+                    "demand": 0.1,
+                    "meanTime": 1
+                }
+            }
+        },
+        "c1": {
+            "h1": {
+                "VM1": {
+                    "model": "QTcloud",
+                    "demand": 0.2,
+                    "meanTime": 1
+                },
+                "VM2": {
+                    "model": "QTcloud",
+                    "demand": 0.2,
+                    "meanTime": 1
+                }
+            }
+        },
+        "c2": {
+            "h1": {
+                "VM1": {
+                    "model": "QTcloud",
+                    "demand": 0.2,
+                    "meanTime": 1
+                },
+                "VM2": {
+                    "model": "QTcloud",
+                    "demand": 0.3,
+                    "meanTime": 1
+                },
+                "VM3": {
+                    "model": "QTcloud",
+                    "demand": 0.5,
+                    "meanTime": 1
+                }
+            }
+        }
+    },
+    "NetworkTechnology": {
+        "ND1": {
+            "computationalLayers": [
+                "computationalLayer1",
+                "computationalLayer2",
+                "computationalLayer3"
+            ],
+            "AccessDelay": 2.77e-06,
+            "Bandwidth": 40000
+        }
+    },
+    "LocalConstraints": {
+        "c0": {
+            "local_res_time": 0.5
+        },
+        "c1": {
+            "local_res_time": 1.0
+        },
+        "c2": {
+            "local_res_time": 1.0
+        }
+    },
+    "GlobalConstraints": {},
+    "DirectedAcyclicGraph": {
+        "c0": {
+            "next": [
+                "c1"
+            ],
+            "transition_probability": [
+                1
+            ]
+        },
+        "c1": {
+            "next": [
+                "c2"
+            ],
+            "transition_probability": [
+                1
+            ]
+        },
+        "c2": {
+            "next": [],
+            "transition_probability": []
+        }
+    },
+    "Lambda": 1,
+    "Time": 1
+}

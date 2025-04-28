@@ -16,14 +16,17 @@ This guide explains how to build, deploy, and manage a Flask application in a Ku
 chmod +x flask-app/setup.sh
 chmod +x flask-app/restart.sh
 
-# Run initial setup script
-minikube start
-eval $(minikube docker-env)
-./setup.sh
+# Start a multi-node Minikube cluster
+minikube start --nodes=3  # Adjust number of nodes as needed
 
-# For subsequent restarts/updates
-eval $(minikube docker-env)
-./restart.sh
+# Build images directly in Minikube's Docker daemon
+minikube image build -t flask-app1:latest -f Dockerfile-app1 . --all
+minikube image build -t flask-app2:latest -f Dockerfile-app2 . --all
+minikube image build -t flask-app-gateway:latest -f Dockerfile-gateway . --all
+
+# Apply the Kubernetes manifests
+kubectl apply -f rbac.yaml
+kubectl apply -f flask-app.yaml
 ```
 
 ### 2. Verify Deployment
@@ -31,11 +34,14 @@ eval $(minikube docker-env)
 # Check events in case of error
 kubectl get events
 
+# Check nodes
+kubectl get nodes
+
 # Check deployment status
 kubectl get deployments
 
 # Check if pods are running
-kubectl get pods
+kubectl get pods -o wide
 
 # Check service status
 kubectl get services
@@ -134,41 +140,11 @@ kubectl rollout status deployment/flask-app
 kubectl scale deployment flask-app --replicas=3
 ```
 
-### Making Changes
-```bash
-# Edit deployment configuration
-kubectl edit deployment flask-app
-
-# Apply configuration changes
-kubectl apply -f flask-app.yaml
-
-# Watch for changes in pods
-kubectl get pods -w
-```
-
 ## Cleanup
 ```bash
-# Delete deployment
 kubectl delete -f flask-app.yaml
 
-# Stop Minikube
-minikube stop
-```
-
-## Full System Restart
-```bash
-# Delete all deployments
-kubectl delete -f flask-app.yaml
-kubectl delete -f loki-deployment.yaml
-
-# Reapply configurations in order
-kubectl apply -f rbac.yaml
-kubectl apply -f loki-config.yaml
-kubectl apply -f loki-deployment.yaml
-kubectl apply -f flask-app.yaml
-
-# Verify all components are running
-kubectl get pods -w
+minikube delete
 ```
 
 ## Troubleshooting
@@ -183,3 +159,23 @@ kubectl get pods -w
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [Prometheus Documentation](https://prometheus.io/docs/)
 - [Agent Setup and Monitoring](README_AGENT.MD)
+
+## Design Time to Kubernetes Conversion
+
+You can convert the design time model (JSON) to Kubernetes manifest files using the provided script:
+
+```bash
+# Install required libraries
+pip install pyyaml
+
+# Make the conversion script executable
+chmod +x convert_design_to_k8s.py
+
+# Run the conversion
+python3 convert_design_to_k8s.py
+
+# Apply the generated manifest
+kubectl apply -f generated-flask-app.yaml
+```
+
+This script maps the computational layers defined in `design_time.json` to Kubernetes nodes and components to deployments, following the compatibility matrix constraints.
