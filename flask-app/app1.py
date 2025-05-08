@@ -108,8 +108,8 @@ def train_model_part1():
         error_msg = f"Failed to load dataset: {str(e)}"
         raise Exception(error_msg)
 
-    train_size = int(len(Training)*.8)
-    test_size = int(len(Training)*.2)
+    train_size = int(len(Training)*.8 * 0.2)
+    test_size = int(len(Training)*.2 * 0.2)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
