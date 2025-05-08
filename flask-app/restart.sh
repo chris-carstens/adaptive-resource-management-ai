@@ -1,16 +1,8 @@
 #!/bin/bash
-echo "1. Building and pushing Docker images..."
-docker build -t flask-app1:latest -f Dockerfile-app1 .
-docker build -t flask-app2:latest -f Dockerfile-app2 .
-docker build -t flask-app-gateway:latest -f Dockerfile-gateway .
-
-docker tag flask-app1:latest localhost:5000/flask-app1:latest
-docker tag flask-app2:latest localhost:5000/flask-app2:latest
-docker tag flask-app-gateway:latest localhost:5000/flask-app-gateway:latest
-
-docker push localhost:5000/flask-app1:latest
-docker push localhost:5000/flask-app2:latest
-docker push localhost:5000/flask-app-gateway:latest
+echo "1. Building Docker images directly in Minikube's Docker daemon..."
+minikube image build -t flask-app1:latest -f Dockerfile-app1 . --all
+minikube image build -t flask-app2:latest -f Dockerfile-app2 . --all
+minikube image build -t flask-app-gateway:latest -f Dockerfile-gateway . --all
 
 echo "2. Applying RBAC configuration..."
 kubectl apply -f rbac.yaml
@@ -22,3 +14,6 @@ echo "4. Restarting deployments..."
 kubectl rollout restart deployment flask-app-1
 kubectl rollout restart deployment flask-app-2
 kubectl rollout restart deployment api-gateway
+
+echo "5. Service URLs:"
+minikube service api-gateway-service --url

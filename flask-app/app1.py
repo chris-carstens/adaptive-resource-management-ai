@@ -13,6 +13,9 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten
 
 app = Flask(__name__)
 
+global dataset_path
+dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
+
 # Load Kubernetes configuration
 config.load_incluster_config()
 api_client = client.ApiClient()
@@ -55,10 +58,6 @@ def after_request(response):
         f"ID: {g.request_id} request completed with status {response.status_code}.%"
     )
     return response
-
-global dataset_path
-dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
-
 
 @app.route('/')
 def health():
@@ -109,8 +108,8 @@ def train_model_part1():
         error_msg = f"Failed to load dataset: {str(e)}"
         raise Exception(error_msg)
 
-    train_size = int(len(Training)*.8 * 0.2)
-    test_size = int(len(Training)*.2 * 0.2)
+    train_size = int(len(Training)*.8)
+    test_size = int(len(Training)*.2)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
@@ -148,27 +147,3 @@ def train_model_part1():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-# ## Metrics Explanation
-
-# This section provides a description of the key metrics used by the agent:
-
-# ### > `n_instances`
-
-# - **Definition**: The number of active instances or replicas of a specific computational resource.
-
-
-# ### > `pressure` (p)
-# - **Formula**: 
-# $$
-# \Large p = \frac{R}{\bar{R}}
-# $$
-
-# Where:
-#   - $R$ = observed response time
-#   - $\bar{R}$ = response time threshold or SLA
-
-
-# - **Interpretation**: It indicates how close the system is to violating its response time constraints:
-
-#   - $p < 1$:

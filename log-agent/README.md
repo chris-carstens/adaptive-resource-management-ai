@@ -30,8 +30,14 @@ export SCALE_KUBERNETES_URL="http://localhost:5000"
 ```
 
 ### 3. Run the Agent
+
+#### Basic usage:
 ```bash
-python3 agent.py
+# Specify a custom time window in minutes
+python3 agent.py --app flask-app-2 --time-window 5.0
+
+# Get help on available arguments
+python3 agent.py --help
 ```
 
 ## Monitoring

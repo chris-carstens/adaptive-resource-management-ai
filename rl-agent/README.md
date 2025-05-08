@@ -21,9 +21,9 @@ python app.py
 
 ## API Reference
 
-### POST /train
+### POST /action
 
-Endpoint to train the RL agent and get a decision.
+Endpoint to get an action from the RL agent and get a decision.
 
 **Request Body:**
 
@@ -47,7 +47,7 @@ Endpoint to train the RL agent and get a decision.
 ## Testing the API
 
 ```bash
-curl -X POST http://localhost:5001/train \
+curl -X POST http://localhost:5001/action \
   -H "Content-Type: application/json" \
   -d '{"workload": 0.75, "utilization": 0.85, "pressure": 0.65, "queue_length_dominant": 0.45}'
 ```

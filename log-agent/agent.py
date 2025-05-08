@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
 import re
+import sys
+import argparse
 from collections import defaultdict
 from loki_client import LokiClient
 from prometheus_client import PrometheusClient
@@ -9,8 +11,9 @@ from scale_kubernetes_client import ScaleKubernetesClient
 from config import CONFIG
 
 class LogAgent:
-    def __init__(self, time_window_minutes: float):
+    def __init__(self, time_window_minutes: float, app_name: str):
         self.time_window = time_window_minutes
+        self.app_name = app_name
         self.loki_client = LokiClient()
         self.prometheus_client = PrometheusClient()
         self.scale_kubernetes_client = ScaleKubernetesClient()
@@ -126,16 +129,13 @@ Requests per Second: {metrics['requests_per_second']}
         return f"{app_header}{basic_metrics}{prometheus_metrics}{request_details}\n"
 
     def _collect_metrics(self):
-        metrics_app1 = self._collect_metrics_by_app("flask-app-1")
-        metrics_app2 = self._collect_metrics_by_app("flask-app-2")
+        metrics_app = self._collect_metrics_by_app(self.app_name)
         
-        print(self._format_metrics(metrics_app1))
-        print(self._format_metrics(metrics_app2))
+        print(self._format_metrics(metrics_app))
         print("=" * 80 + "\n")
 
         metrics = {
-            "flask-app-1": metrics_app1,
-            "flask-app-2": metrics_app2
+            self.app_name: metrics_app,
         }
         return metrics
 
@@ -143,33 +143,32 @@ Requests per Second: {metrics['requests_per_second']}
         while True:
             metrics = self._collect_metrics()
 
-            # Get the current status to determine current replicas
-            status = self.scale_kubernetes_client.get_scale_status()
-            print(f"Current scaling status: {status}")
-            app1_replicas = status.get('app1').get('instances')
-            app2_replicas = status.get('app2').get('instances')
+            # # Get the current status to determine current replicas
+            # status = self.scale_kubernetes_client.get_scale_status()
+            # print(f"Current scaling status: {status}")
+            # app_replicas = status.get(self.app_name).get('instances')
             
-            print(f"Current replicas - App1: {app1_replicas}, App2: {app2_replicas}")
+            # # Get scaling decisions from RL agent
+            # app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas).action()
             
-            # Get scaling decisions from RL agent
-            app1_decision = RLAgentClient(metrics["flask-app-1"], n_replicas=app1_replicas).train()
-            app2_decision = RLAgentClient(metrics["flask-app-2"], n_replicas=app2_replicas).train()
+            # n_instances_app = app_decision.get("n_instances")
             
-            n_instances_app_1 = app1_decision.get("n_instances")
-            n_instances_app_2 = app2_decision.get("n_instances")
-            
-            # Only scale if there's a change needed
-            if n_instances_app_1 != app1_replicas:
-                print(f"Scaling app1 from {app1_replicas} to {n_instances_app_1} instances")
-                self.scale_kubernetes_client.scale_app("app1", n_instances_app_1)
-            
-            if n_instances_app_2 != app2_replicas:
-                print(f"Scaling app2 from {app2_replicas} to {n_instances_app_2} instances")
-                self.scale_kubernetes_client.scale_app("app2", n_instances_app_2)
+            # # Only scale if there's a change needed
+            # if n_instances_app != app_replicas:
+            #     print(f"Scaling {self.app_name} from {app_replicas} to {n_instances_app} instances")
+            #     self.scale_kubernetes_client.scale_app(self.app_name, n_instances_app)
 
             time.sleep(CONFIG['query_interval'])
 
 
-
 if __name__ == "__main__":
-    LogAgent(time_window_minutes=10.0).run()
+    parser = argparse.ArgumentParser(description='Log Agent for monitoring and scaling applications')
+    parser.add_argument('--app', type=str, default="app1",
+                        help='Application name to monitor (default: app1)')
+    parser.add_argument('--time-window', type=float, default=10.0,
+                        help='Time window in minutes for metrics collection (default: 10.0)')
+    
+    args = parser.parse_args()
+    
+    print(f"Starting Log Agent for application: {args.app}")
+    LogAgent(time_window_minutes=args.time_window, app_name=args.app).run()

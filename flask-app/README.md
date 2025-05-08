@@ -1,6 +1,4 @@
-# Flask Application with Kubernetes
-
-This guide explains how to build, deploy, and manage a Flask application in a Kubernetes cluster using Minikube.
+# Flask Applications with Kubernetes
 
 ## Prerequisites
 - Minikube installed
@@ -8,17 +6,24 @@ This guide explains how to build, deploy, and manage a Flask application in a Ku
 - kubectl installed
 - Python installed
 
-## Initial Setup and Deployment
+## Flask Applications Setup
 
 ### 1. Run Setup and Start Scripts
 ```bash
 # Make scripts executable
-chmod +x flask-app/setup.sh
-chmod +x flask-app/restart.sh
+chmod +x setup.sh
+chmod +x restart.sh
 
-# Start a multi-node Minikube cluster
-minikube start --nodes=3  # Adjust number of nodes as needed
+minikube start --nodes=1
 
+./setup.sh
+
+# If you need to rebuild and restart after changes:
+./restart.sh
+```
+
+# Alternatively, you can run the commands manually:
+```bash
 # Build images directly in Minikube's Docker daemon
 minikube image build -t flask-app1:latest -f Dockerfile-app1 . --all
 minikube image build -t flask-app2:latest -f Dockerfile-app2 . --all
@@ -29,7 +34,7 @@ kubectl apply -f rbac.yaml
 kubectl apply -f flask-app.yaml
 ```
 
-### 2. Verify Deployment
+### 2. Verify Deployment [Optional]
 ```bash
 # Check events in case of error
 kubectl get events
@@ -52,28 +57,6 @@ kubectl get services
 minikube service api-gateway-service --url
 ```
 
-## Application Architecture
-
-The application consists of three components that communicate via HTTP requests:
-
-1. **API Gateway**: Routes and manages requests to the microservices
-2. **Flask App 1**: Handles the first part of the machine learning pipeline
-3. **Flask App 2**: Handles the second part of the machine learning pipeline
-
-The communication flow is:
-- User → API Gateway
-- API Gateway → App 1
-- App 1 processes request and sends data to App 2
-- App 2 completes processing and returns results
-- Results returned to user through the API Gateway
-
-## Gateway Endpoints
-
-The API Gateway provides the following endpoints:
-
-- `GET /` - Health check endpoint
-- `GET /api/run-fire-detector` - Run the fire detection model training
-
 ## Monitoring Setup
 
 ### 1. Set Up Prometheus
@@ -86,6 +69,7 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
   --set grafana.enabled=false \
   --set alertmanager.enabled=false
 
+# Add label (in case is not already added)
 kubectl label pods -l app=flask-app-1 monitoring=true
 kubectl label pods -l app=flask-app-2 monitoring=true
 
@@ -110,20 +94,34 @@ kubectl apply -f loki-config.yaml
 kubectl apply -f loki-deployment.yaml
 ```
 
-## Monitoring and Troubleshooting
+## Application Architecture
 
-### View Application Metrics
-```bash
+The application consists of three components that communicate via HTTP requests:
+
+1. **API Gateway**: Routes and manages requests to the microservices
+2. **Flask App 1**: Handles the first part of the machine learning pipeline
+3. **Flask App 2**: Handles the second part of the machine learning pipeline
+
+The communication flow is:
+- User → API Gateway
+- API Gateway → App 1
+- Gateway receives response from App 1
+- API Gateway → App 2
+- Gateway receives response from App 2
+- Results returned to user through the API Gateway
+
+## Gateway Endpoints
+
+The API Gateway provides the following endpoints:
+
+- `GET /` - Health check endpoint
+- `GET /api/run-fire-detector` - Run the fire detection model training
+
+
 ### View Application Logs
 ```bash
 # View logs in real-time
 kubectl logs --timestamps=true <pod-name>
-
-# Query Loki logs through Grafana
-# Example LogQL queries:
-# - {application="flask-app-1"}
-# - {application="flask-app-2"}
-```
 
 ### Common Commands
 ```bash
@@ -146,12 +144,6 @@ kubectl delete -f flask-app.yaml
 
 minikube delete
 ```
-
-## Troubleshooting
-- If pods show `ImagePullBackOff`, check if the image was properly pushed to the local registry
-- If pods show `CrashLoopBackOff`, check the pod logs for application errors
-- If service is not accessible, verify the service configuration and pod labels match
-- If gateway fails to connect to services, check the service names and ports in environment variables
 
 ## Additional Resources
 - [Kubernetes Documentation](https://kubernetes.io/docs/)

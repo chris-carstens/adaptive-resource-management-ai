@@ -17,13 +17,18 @@ spec:
       - image: flask-app-gateway:latest
         imagePullPolicy: Never
         name: api-gateway
+        resources:
+          # limits:
+          #   memory: "2Gi"
+          #   cpu: "500m"
+          # requests:
+          #   memory: "1Gi"
+          #   cpu: "250m"
         ports:
         - containerPort: 5000
           name: http
         - containerPort: 8000
           name: metrics
-      nodeSelector:
-        kubernetes.io/hostname: minikube
       serviceAccountName: flask-app-sa
 ---
 apiVersion: v1
@@ -63,10 +68,15 @@ spec:
       - image: flask-app1:latest
         imagePullPolicy: Never
         name: flask-app-1
+        resources:
+          # limits:
+          #   memory: "6Gi"
+          #   cpu: "2000m"
+          # requests:
+          #   memory: "2Gi"
+          #   cpu: "1000m"
         ports:
         - containerPort: 5000
-      nodeSelector:
-        kubernetes.io/hostname: minikube-m02
 ---
 apiVersion: v1
 kind: Service
@@ -99,10 +109,15 @@ spec:
       - image: flask-app2:latest
         imagePullPolicy: Never
         name: flask-app-2
+        resources:
+          # limits:
+          #   memory: "8Gi"
+          #   cpu: "2000m" 
+          # requests:
+          #   memory: "2Gi"
+          #   cpu: "1000m"
         ports:
         - containerPort: 5000
-      nodeSelector:
-        kubernetes.io/hostname: minikube-m03
 ---
 apiVersion: v1
 kind: Service

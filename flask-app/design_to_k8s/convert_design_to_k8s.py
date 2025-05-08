@@ -3,7 +3,6 @@
 import json
 import yaml
 import os
-from collections import defaultdict
 
 
 def load_design_time_json(filepath):
@@ -122,7 +121,7 @@ def create_deployments_from_components(design_data, component_map):
                 "type": "NodePort"
             }
         }
-        
+
         # Add labels for api-gateway service
         if deployment_name == "api-gateway":
             service["metadata"]["labels"] = {"app": deployment_name}

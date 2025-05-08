@@ -10,7 +10,7 @@ class ScaleKubernetesClient:
         Scale an application to the specified number of instances.
         
         Args:
-            app_name (str): The application name ('app1' or 'app2')
+            app_name (str): The application name ('flask-app-1' or 'flask-app-2')
             n_instances (int): The number of instances to scale to
         
         Returns:

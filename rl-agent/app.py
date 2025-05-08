@@ -14,8 +14,8 @@ def health():
         "message": "RL agent API is running"
     })
 
-@app.route('/train', methods=['POST'])
-def train():
+@app.route('/action', methods=['POST'])
+def action():
     """
     Receive training data and return a random decision.
     Expected body format:

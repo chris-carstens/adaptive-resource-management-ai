@@ -11,7 +11,7 @@ class RLAgentClient:
         self.n_replicas = n_replicas
         self.response_time_threshold = CONFIG['rl_agent']['response_time_threshold']
 
-    def train(self):
+    def action(self):
         body = {
             "workload": self._workload(),
             "utilization": self._utilization(),
@@ -20,7 +20,7 @@ class RLAgentClient:
         }
         try:
             response = requests.post(
-                f"{self.base_url}/train",
+                f"{self.base_url}/action",
                 json=body
             )
             response.raise_for_status()

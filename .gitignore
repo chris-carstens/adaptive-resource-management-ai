@@ -56,3 +56,6 @@ shared_volume/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+Figaro/
+JMeter/
