@@ -1,6 +1,12 @@
 ## Basics
 In our application the idea is to send two matrices (taken from the csv file) to the application.
 
+To install locally run:
+
+```shell
+brew install jmeter
+```
+
 1. **Configure the JMeter Test Plan**: open the notebook `WorkloadAndConfigGenerator.ipynb`. This will allow you to generate the desired workload (currently, only a sinusoidal pattern is supported) and, once the workload is generated, configure the following parameters:
 
    ```python
