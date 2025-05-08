@@ -12,7 +12,8 @@ class RLAgentClient:
         self.response_time_threshold = CONFIG['rl_agent']['response_time_threshold']
 
     def action(self):
-        body = {
+        observation = {
+            "n_instances": self.n_replicas,
             "workload": self._workload(),
             "utilization": self._utilization(),
             "pressure": self._pressure(),
@@ -21,8 +22,9 @@ class RLAgentClient:
         try:
             response = requests.post(
                 f"{self.base_url}/action",
-                json=body
+                json={'observation': observation}
             )
+
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -45,7 +47,9 @@ class RLAgentClient:
     #     return application_2
     
     def _utilization(self):
-        self._workload() * self._demand() / self.n_replicas
+        # TODO: metrics dict returns this key giving a pod name, with a number between 0 and 1
+        return self.metrics["cpu_usage"]
+        # self._workload() * self._demand() / self.n_replicas
 
     def _workload(self):
         return self.metrics["requests_per_second"]

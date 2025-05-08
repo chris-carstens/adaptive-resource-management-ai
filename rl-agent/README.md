@@ -47,7 +47,7 @@ Endpoint to get an action from the RL agent and get a decision.
 ## Testing the API
 
 ```bash
-curl -X POST http://localhost:5001/action \
+curl -X POST http://localhost:5100/action \
   -H "Content-Type: application/json" \
   -d '{"workload": 0.75, "utilization": 0.85, "pressure": 0.65, "queue_length_dominant": 0.45}'
 ```
