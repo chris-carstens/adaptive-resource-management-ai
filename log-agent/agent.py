@@ -36,8 +36,7 @@ class LogAgent:
         return 0
 
     def _calculate_request_rate(self, request_count: int) -> float:
-        # Convert window to seconds for per-second rate
-        seconds = self.time_window * 60
+        seconds = self.time_window * 60 # To seconds
         return request_count / seconds if seconds > 0 else 0
 
     def _unix_to_datetime(self, unix_timestamp):
@@ -77,11 +76,6 @@ class LogAgent:
             }
 
         completed_requests = len([r for r in request_times.values() if 'end' in r])
-        requests_per_second = self._calculate_request_rate(completed_requests)
-
-        # Get all pod CPU usages for display
-        all_pod_cpu = self.prometheus_client.get_pod_cpu_usage()
-        pod_cpu_formatted = {pod: f"{usage:.2f}%" for pod, usage in all_pod_cpu.items()}
 
         metrics = {
             'application': application,
@@ -90,8 +84,8 @@ class LogAgent:
             'mean_request_time': self._calculate_mean_request_time(request_times),
             'active_requests': len([r for r in request_times.values() if 'end' not in r]),
             'completed_requests': completed_requests,
-            'requests_per_second': requests_per_second,
-            "all_pod_cpu_usage": pod_cpu_formatted,
+            'requests_per_second': self._calculate_request_rate(completed_requests),
+            "cpu_usage": self.prometheus_client.get_pod_cpu_usage(application=application, time_window=self.time_window),
             'request_times': formatted_times
         }
 
@@ -114,9 +108,7 @@ Completed Requests: {metrics['completed_requests']}
 Requests per Second: {metrics['requests_per_second']}
 """
         # Add Prometheus CPU usage section with raw query results
-        prometheus_metrics = "\nPrometheus CPU Usage (Query Results):\n----------------------------------"
-        for pod, usage in metrics['all_pod_cpu_usage'].items():
-            prometheus_metrics += f"\n{pod}: {usage}"
+        prometheus_metrics = f"\nPrometheus CPU Usage (Query Results): {metrics['cpu_usage']}"
         
         # Format the detailed request times
         request_details = "\nDetailed Request Times:\n-------------------"
@@ -143,20 +135,25 @@ Requests per Second: {metrics['requests_per_second']}
         while True:
             metrics = self._collect_metrics()
 
-            # # Get the current status to determine current replicas
-            # status = self.scale_kubernetes_client.get_scale_status()
-            # print(f"Current scaling status: {status}")
-            # app_replicas = status.get(self.app_name).get('instances')
+            # Get the current status to determine current replicas
+            status = self.scale_kubernetes_client.get_scale_status()
+            if not status:
+                print("Error: Unable to retrieve scaling status.")
+                time.sleep(CONFIG['query_interval'])
+                continue
+
+            print(f"Current scaling status: {status}")
+            app_replicas = status.get(self.app_name).get('instances')
             
-            # # Get scaling decisions from RL agent
-            # app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas).action()
+            # Get scaling decisions from RL agent
+            app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas).action()
+
+            n_instances_app = app_decision.get("action")
             
-            # n_instances_app = app_decision.get("n_instances")
-            
-            # # Only scale if there's a change needed
-            # if n_instances_app != app_replicas:
-            #     print(f"Scaling {self.app_name} from {app_replicas} to {n_instances_app} instances")
-            #     self.scale_kubernetes_client.scale_app(self.app_name, n_instances_app)
+            # Only scale if there's a change needed
+            if n_instances_app != app_replicas:
+                print(f"Scaling {self.app_name} from {app_replicas} to {n_instances_app} instances")
+                self.scale_kubernetes_client.scale_app(self.app_name, n_instances_app)
 
             time.sleep(CONFIG['query_interval'])
 
