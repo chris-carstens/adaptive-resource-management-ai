@@ -60,10 +60,16 @@ In order to use the configuration file, put in the directory `scripts` the gener
 1. Build the docker image (go in the directory `JM` before executing the command):
 
    ```shell
-   docker build -t jmeter:latest .
+   docker build --no-cache -t jmeter:latest .
    ```
 
-2. Apply the manifest files (the docker local image must be accessible by the cluster, with minikube we use the load image command to do so):
+2. Make the image available to your Kubernetes cluster (for Minikube):
+
+   ```shell
+   minikube image load jmeter:latest
+   ```
+
+3. Apply the manifest files to deploy JMeter in the cluster:
 
    ```shell
    kubectl apply -f jmeter-pvc.yaml
@@ -71,4 +77,10 @@ In order to use the configuration file, put in the directory `scripts` the gener
    kubectl apply -f jmeter-job.yaml
    ```
 
-docker run --network="host" -v ~/jmeter_results:/jmeter/results -v ~/jmeter_logs:/jmeter/logs jmeter:latest -n -t /jmeter/scripts/jmeterConfigurationFile.jmx -l /jmeter/results/results.jtl -j /jmeter/logs/jmeter.log
+   This will create the necessary persistent volume, configmap, and run the JMeter job in your Kubernetes cluster.
+
+docker run --rm -v ~/jmeter_results:/jmeter/results -v ~/jmeter_logs:/jmeter/logs jmeter:latest -n -t /jmeter/scripts/jmeterConfigurationFile.jmx -l /jmeter/results/results.jtl -j /jmeter/logs/jmeter.log
+
+docker run --rm jmeter:latest -n -t /jmeter/scripts/jmeterConfigurationFile.jmx
+
+docker run --rm -it curlimages/curl curl http://host.docker.internal:5000/run-fire-detector
