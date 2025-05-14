@@ -3,6 +3,7 @@ import requests
 import os
 from kubernetes import client, config
 import logging
+import time
 
 app = Flask(__name__)
 
@@ -30,18 +31,26 @@ def health():
 @app.route('/run-fire-detector', methods=['POST'])
 def gateway():
     app.logger.info('Forwarding request to app1')
+    start_time_app1 = time.time()
     app1_response = requests.post(f"{APP1_URL}/run-fire-detector-1")
+    elapsed_time_app1 = time.time() - start_time_app1
     app.logger.info('Received response from app1')
     app1_data = app1_response.json()    
 
     app.logger.info('Forwarding request to app2')
+    start_time_app2 = time.time()
     app2_response = requests.post(
         f"{APP2_URL}/run-fire-detector-2",
         json=app1_data
     )
+    elapsed_time_app2 = time.time() - start_time_app2
     app.logger.info('Received response from app2')
 
-    return jsonify(app2_response.json())
+    app2_json = app2_response.json()
+    app2_json['app1_response_time_sec'] = elapsed_time_app1
+    app2_json['app2_response_time_sec'] = elapsed_time_app2
+
+    return jsonify(app2_json)
 
 @app.route('/scale', methods=['POST'])
 def scale_app():
