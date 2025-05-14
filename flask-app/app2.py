@@ -109,11 +109,11 @@ def train_model_part2_from_data(train_features, train_labels, test_features, tes
 
     # Second half of the model
     model_part2 = Sequential()
-    model_part2.add(Dense(32, activation='relu', input_shape=(train_features.shape[1],)))
+    model_part2.add(Dense(8, activation='relu', input_shape=(train_features.shape[1],)))
     model_part2.add(Dense(1, activation='sigmoid'))
 
     # Compile model
-    learning_rate = 0.001
+    learning_rate = 0.01
     optimizer = AdamW(learning_rate=learning_rate)
     model_part2.compile(optimizer=optimizer, 
                     loss=tf.keras.losses.BinaryCrossentropy(),

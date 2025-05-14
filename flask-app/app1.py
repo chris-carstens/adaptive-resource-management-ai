@@ -79,9 +79,7 @@ def train_part1():
 
 def train_model_part1():
     model_part1 = Sequential()
-    model_part1.add(Conv2D(64, (3,3), 1, activation='relu', input_shape=(64,64,3)))
-    model_part1.add(MaxPooling2D())
-    model_part1.add(Conv2D(32, (3,3), 1, activation='relu'))
+    model_part1.add(Conv2D(8, (3,3), 1, activation='relu', input_shape=(8,8,3)))
     model_part1.add(MaxPooling2D())
     model_part1.add(Flatten())
 
@@ -97,10 +95,10 @@ def train_model_part1():
             error_msg = f"Training data not found at {training_path}"
             raise FileNotFoundError(error_msg)
         
-        # Load and preprocess data
+        # Load and preprocess data with batch size
         Training = tf.keras.utils.image_dataset_from_directory(
             training_path,
-            image_size=(64, 64)
+            image_size=(8, 8)
         )
         Training = Training.map(lambda x,y: (x/255, y))
 
@@ -113,21 +111,18 @@ def train_model_part1():
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
-    # Add tensorboard callback
-    logdir='logs_part1'
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
-
     hist = model_part1.fit(train,
                           epochs=1,
                           validation_data=test, 
-                          callbacks=[tensorboard_callback])
+                          verbose=0,
+    )
 
     def generate_features(dataset):
         all_features = []
         all_labels = []
 
         for images, labels in dataset:
-            features = model_part1.predict(images)
+            features = model_part1.predict(images, verbose=0)
             all_features.append(features)
             all_labels.append(labels)
         
@@ -141,7 +136,6 @@ def train_model_part1():
         'train_labels': train_labels,
         'test_features': test_features,
         'test_labels': test_labels,
-        'history': hist.history
     }
 
 
