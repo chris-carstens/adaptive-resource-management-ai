@@ -12,7 +12,7 @@ spec:
         imagePullPolicy: Never
         env:
         - name: TEST_PLAN
-          value: "jmeter.jmx"  # Replace with your actual test plan name
+          value: "jmeterConfigurationFile.jmx"  # Replace with your actual test plan name
         volumeMounts:
         - name: config-volume
           mountPath: /config

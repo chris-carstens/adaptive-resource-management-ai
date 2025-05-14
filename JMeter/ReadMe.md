@@ -69,7 +69,16 @@ In order to use the configuration file, put in the directory `scripts` the gener
    minikube image load jmeter:latest
    ```
 
+   Or directly: minikube image build -t jmeter:latest .
+
 3. Apply the manifest files to deploy JMeter in the cluster:
+
+   ```shell
+   kubectl delete -f jmeter-job.yaml
+   kubectl delete -f jmeter-configmap.yaml
+   kubectl delete -f jmeter-pvc.yaml
+   ```
+
 
    ```shell
    kubectl apply -f jmeter-pvc.yaml

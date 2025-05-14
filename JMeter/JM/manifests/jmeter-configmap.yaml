@@ -6,8 +6,8 @@ data:
   # This is where we'd store test plan specifics or configuration overrides
   test-config.properties: |
     # Target service using K8s DNS
-    target_host=matrix-multiply-service.default.svc.cluster.local
-    target_port=80
+    target_host=api-gateway-service.default.svc.cluster.local
+    target_port=5000
     threads=10
     rampup=30
     duration=300
@@ -15,7 +15,7 @@ data:
   # You can add additional test plans or properties files here
   run-test.sh: |
     #!/bin/bash
-    TEST_PLAN=${TEST_PLAN:-"test-plan.jmx"}
+    TEST_PLAN=${TEST_PLAN:-"jmeterConfigurationFile.jmx"}
     TEST_DIR=/jmeter/scripts
     RESULTS_DIR=/jmeter/results
     
