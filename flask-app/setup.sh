@@ -9,6 +9,3 @@ kubectl apply -f rbac.yaml
 
 echo "3. Deploying to Kubernetes..."
 kubectl apply -f flask-app.yaml
-
-echo "4. Service URLs:"
-minikube service api-gateway-service --url

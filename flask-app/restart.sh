@@ -14,6 +14,3 @@ echo "4. Restarting deployments..."
 kubectl rollout restart deployment flask-app-1
 kubectl rollout restart deployment flask-app-2
 kubectl rollout restart deployment api-gateway
-
-echo "5. Service URLs:"
-minikube service api-gateway-service --url

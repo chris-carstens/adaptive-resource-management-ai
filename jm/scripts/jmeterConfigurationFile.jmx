@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Fire Detector Requests - Scaler Test">
+      <stringProp name="TestPlan.comments">This performs a set of request to our fire detector web app to verify whether our system is able to correctly scale up/down the number of running pods</stringProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup guiclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroupGui" testclass="com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup" testname="Concurrency Thread Group">
+        <elementProp name="ThreadGroup.main_controller" elementType="com.blazemeter.jmeter.control.VirtualUserController"/>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <stringProp name="TargetLevel">500</stringProp>
+        <stringProp name="RampUp">0</stringProp>
+        <stringProp name="Steps">1</stringProp>
+        <stringProp name="Hold">3</stringProp>
+        <stringProp name="LogFilename"></stringProp>
+        <stringProp name="Iterations"></stringProp>
+        <boolProp name="same_user_on_next_iteration">false</boolProp>
+        <stringProp name="Unit">M</stringProp>
+        <stringProp name="TestPlan.comments">It defines how many users we have to perform the requests (Be sure to have enough users to keep up with timer)</stringProp>
+      </com.blazemeter.jmeter.threads.concurrency.ConcurrencyThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Fire Detector - HTTP Request" enabled="true">
+          <stringProp name="HTTPSampler.domain">api-gateway-service</stringProp>
+          <stringProp name="HTTPSampler.port">5000</stringProp>
+          <stringProp name="HTTPSampler.path">/run-fire-detector</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <kg.apc.jmeter.timers.VariableThroughputTimer guiclass="kg.apc.jmeter.timers.VariableThroughputTimerGui" testclass="kg.apc.jmeter.timers.VariableThroughputTimer" testname="Throughput Shaping Timer" enabled="true">
+        <collectionProp name="load_profile">
+          <collectionProp name="26742888">
+            <stringProp name="0">0</stringProp>
+            <stringProp name="12">12</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="80496206">
+            <stringProp name="12">12</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24991202">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="3">3</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25067772">
+            <stringProp name="3">3</stringProp>
+            <stringProp name="6">6</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25171436">
+            <stringProp name="6">6</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24993558">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="5">5</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25134918">
+            <stringProp name="5">5</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24995914">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="7">7</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25207954">
+            <stringProp name="7">7</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24994736">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="6">6</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25180860">
+            <stringProp name="6">6</stringProp>
+            <stringProp name="9">9</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25280990">
+            <stringProp name="9">9</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24991202">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="3">3</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25061882">
+            <stringProp name="3">3</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24992380">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="4">4</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25098400">
+            <stringProp name="4">4</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24993558">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="5">5</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25139630">
+            <stringProp name="5">5</stringProp>
+            <stringProp name="5">5</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25134918">
+            <stringProp name="5">5</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="26777050">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="10">10</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="80423170">
+            <stringProp name="10">10</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24995914">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="7">7</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25213844">
+            <stringProp name="7">7</stringProp>
+            <stringProp name="6">6</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="26964352">
+            <stringProp name="6">6</stringProp>
+            <stringProp name="14">14</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="80575132">
+            <stringProp name="14">14</stringProp>
+            <stringProp name="6">6</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25171436">
+            <stringProp name="6">6</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24998270">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="9">9</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25280990">
+            <stringProp name="9">9</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24992380">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="4">4</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25098400">
+            <stringProp name="4">4</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24993558">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="5">5</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25138452">
+            <stringProp name="5">5</stringProp>
+            <stringProp name="4">4</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25098400">
+            <stringProp name="4">4</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="26777050">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="10">10</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="80423170">
+            <stringProp name="10">10</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="26787652">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="19">19</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="80758900">
+            <stringProp name="19">19</stringProp>
+            <stringProp name="7">7</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25216200">
+            <stringProp name="7">7</stringProp>
+            <stringProp name="8">8</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="25244472">
+            <stringProp name="8">8</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+          <collectionProp name="24988846">
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+            <stringProp name="1">1</stringProp>
+          </collectionProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments">It defines the traffic shape (i.e. Request Per Second) at each time instant</stringProp>
+      </kg.apc.jmeter.timers.VariableThroughputTimer>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
