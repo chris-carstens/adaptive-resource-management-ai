@@ -60,7 +60,8 @@ In order to use the configuration file, put in the directory `scripts` the gener
 1. Build the docker image (go in the directory `JM` before executing the command):
 
    ```shell
-   docker build --no-cache -t jmeter:latest .
+   <!-- docker build --no-cache -t jmeter:latest . -->
+   docker build -t jmeter:latest .
    ```
 
 2. Make the image available to your Kubernetes cluster (for Minikube):
@@ -78,7 +79,6 @@ In order to use the configuration file, put in the directory `scripts` the gener
    kubectl delete -f jmeter-configmap.yaml
    kubectl delete -f jmeter-pvc.yaml
    ```
-
 
    ```shell
    kubectl apply -f jmeter-pvc.yaml

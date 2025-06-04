@@ -3,7 +3,6 @@ from flask import Flask, jsonify, request, g
 import numpy as np
 import logging
 import logging_loki
-from threading import Lock
 import tensorflow as tf
 from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
 from tensorflow.keras.models import Sequential
@@ -41,16 +40,10 @@ flask_logger = logging.getLogger('werkzeug')
 flask_logger.setLevel(logging.INFO)
 flask_logger.addHandler(handler)
 
-# Global counter and lock for incremental IDs
-request_counter = 0
-counter_lock = Lock()
-
 @app.before_request
 def before_request():
-    global request_counter
-    with counter_lock:
-        request_counter += 1
-        g.request_id = request_counter
+    # Extract request ID from headers (sent by gateway)
+    g.request_id = request.headers.get('X-Request-ID', 'unknown')
     flask_logger.info(f"ID: {g.request_id} request arrived")
 
 @app.after_request

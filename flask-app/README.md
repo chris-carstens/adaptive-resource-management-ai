@@ -14,13 +14,23 @@
 chmod +x setup.sh
 chmod +x restart.sh
 
+# Start Minikube with default resources 
+# Note: Default resources vary by driver and system but are typically 2 CPUs and 4GB memory
 minikube start --nodes=1
+
+# To customize resources and other configurations, use:
+# minikube start --nodes=1 --cpus=2 --memory=4096MB --disk-size=20GB --driver=docker
+
+# To check allocated resources after starting:
+# kubectl get nodes -o=jsonpath="{.items[0].status.capacity}"
 
 ./setup.sh
 
 # If you need to rebuild and restart after changes:
 ./restart.sh
 ```
+# API Gateway
+kubectl port-forward service/api-gateway-service 5000:5000
 
 # Alternatively, you can run the commands manually:
 ```bash
@@ -115,7 +125,7 @@ The communication flow is:
 The API Gateway provides the following endpoints:
 
 - `GET /` - Health check endpoint
-- `GET /api/run-fire-detector` - Run the fire detection model training
+- `GET /run-fire-detector` - Run the fire detection model training
 
 
 ### View Application Logs
@@ -141,7 +151,7 @@ kubectl scale deployment flask-app --replicas=3
 ## Cleanup
 ```bash
 kubectl delete -f flask-app.yaml
-
+kubectl delete pods --all
 minikube delete
 ```
 
@@ -171,3 +181,29 @@ kubectl apply -f generated-flask-app.yaml
 ```
 
 This script maps the computational layers defined in `design_time.json` to Kubernetes nodes and components to deployments, following the compatibility matrix constraints.
+
+
+- Verify the metric calculations.
+- Try a loop with real values using this calculations comparing with the group.
+- Check the point that they mentioned about avoiding the delay.
+- Case that the number of pods is above the limit.
+- Also check when the action returns an error or -1.
+- Run with a real workload from JMeter.
+- What about the checkpoints and warmup excutions.
+- Share how to generate this plots with thw worlkload and utilizatio with the metrics.
+- what is the difference between service time and response time. How is computed the service time.
+- The readmes of test plans are for JMETER?
+
+
+- How the utilization should be calculated with prometheus. It is generating problems when consulting for short intervals.
+- Implement the response time (instead of the service time as currently done).
+- Consider for the last time that we have the API GATEWAY. Should we measure the queue time for the gateway?
+- Pending: How to calculate the request time for the API Gateway.
+- Why service time is changing?
+- Adjust constants metrics for pressure, demand, threshold.
+- Calculate the demmand.
+
+Meeting:
+- Tune the values like demand and threshold for the pressure to try final version of FIGARO.
+- Implement the response time with the value that comes from JMETER.
+- Why setvice time is changing?

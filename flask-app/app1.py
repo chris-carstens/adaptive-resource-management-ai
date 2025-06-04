@@ -1,20 +1,15 @@
 from kubernetes import client, config
-from flask import Flask, jsonify, g
+from flask import Flask, jsonify, g, request
 import numpy as np
 import os
 import logging
 import logging_loki
-from threading import Lock
-import kagglehub
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten
 
 
 app = Flask(__name__)
-
-global dataset_path
-dataset_path = kagglehub.dataset_download("alik05/forest-fire-dataset")
 
 # Load Kubernetes configuration
 config.load_incluster_config()
@@ -40,16 +35,10 @@ flask_logger = logging.getLogger('werkzeug')
 flask_logger.setLevel(logging.INFO)
 flask_logger.addHandler(loki_handler)
 
-# Global counter and lock for incremental IDs
-request_counter = 0
-counter_lock = Lock()
-
 @app.before_request
 def before_request():
-    global request_counter
-    with counter_lock:
-        request_counter += 1
-        g.request_id = request_counter
+    # Extract request ID from headers (sent by gateway)
+    g.request_id = request.headers.get('X-Request-ID', 'unknown')
     flask_logger.info(f"ID: {g.request_id} request arrived")
 
 @app.after_request
@@ -88,8 +77,8 @@ def train_model_part1():
                        metrics=['accuracy'])
 
     try:
-        # Update the training path to point to the downloaded dataset
-        training_path = os.path.join(dataset_path, "Forest Fire Dataset", "Training")
+        # Update the training path to point to the locally copied Training directory
+        training_path = "./Training"
         
         if not os.path.exists(training_path):
             error_msg = f"Training data not found at {training_path}"
@@ -98,7 +87,8 @@ def train_model_part1():
         # Load and preprocess data with batch size
         Training = tf.keras.utils.image_dataset_from_directory(
             training_path,
-            image_size=(8, 8)
+            image_size=(8, 8),
+            batch_size=3,
         )
         Training = Training.map(lambda x,y: (x/255, y))
 
@@ -106,8 +96,8 @@ def train_model_part1():
         error_msg = f"Failed to load dataset: {str(e)}"
         raise Exception(error_msg)
 
-    train_size = int(len(Training)*.8 * 0.2)
-    test_size = int(len(Training)*.2 * 0.2)
+    train_size = int(len(Training)*.8 * 0.01)
+    test_size = int(len(Training)*.2 * 0.01)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
@@ -118,15 +108,16 @@ def train_model_part1():
     )
 
     def generate_features(dataset):
-        all_features = []
+        all_images = []
         all_labels = []
-
         for images, labels in dataset:
-            features = model_part1.predict(images, verbose=0)
-            all_features.append(features)
+            all_images.append(images)
             all_labels.append(labels)
+        all_images = np.concatenate(all_images)
+        all_labels = np.concatenate(all_labels)
+        features = model_part1.predict(all_images, verbose=0)
         
-        return np.concatenate(all_features), np.concatenate(all_labels)
+        return features, all_labels
 
     train_features, train_labels = generate_features(train)
     test_features, test_labels = generate_features(test)

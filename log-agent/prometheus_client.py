@@ -25,7 +25,7 @@ class PrometheusClient:
     def get_pod_cpu_usage(self, application, time_window):
         # TODO: CHECK THE TIME
         """Get CPU usage for all Flask pods directly from the query without calculations"""
-        query = f'rate(container_cpu_usage_seconds_total{{pod=~"{application}.*"}}[{int(time_window)}m]) * 100'
+        query = f'rate(container_cpu_usage_seconds_total{{pod=~"{application}.*"}}[{int(time_window)}s])'
         result = self.query(query)
 
         if not result or result.get('status') != 'success':
@@ -34,5 +34,5 @@ class PrometheusClient:
         metrics = result.get('data', {}).get('result', [])
         if metrics:
             # Get last pod with this name. Should be just one pod in the response
-            return float(metrics[-1].get('value', [0, 0])[1]) / 100
-        return None
+            return float(metrics[-1].get('value', [0, 0])[1])
+        return 0

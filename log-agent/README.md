@@ -18,8 +18,6 @@ kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 909
 # Loki logs
 kubectl port-forward service/loki 3100:3100
 
-# API Gateway
-kubectl port-forward service/api-gateway-service 5000:5000
 ```
 
 ### 2. Environment Variables
