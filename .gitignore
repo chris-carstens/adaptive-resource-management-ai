@@ -56,6 +56,3 @@ shared_volume/
 # OS-specific
 .DS_Store
 Thumbs.db
-
-# JM results
-JMeter/JM/scripts/results/
