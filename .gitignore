@@ -58,4 +58,4 @@ shared_volume/
 Thumbs.db
 
 # JM results
-JMeter/scripts/results/
+JMeter/JM/scripts/results/
