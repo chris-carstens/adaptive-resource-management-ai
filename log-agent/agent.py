@@ -1,7 +1,6 @@
 import time
 from datetime import datetime
 import re
-import sys
 import argparse
 import json
 from collections import defaultdict
@@ -199,13 +198,11 @@ Requests per Second: {metrics['requests_per_second']}
                 continue
             print(f"Current scaling status: {status}")
             app_replicas = status.get(self.app_name).get('instances')
-            # if metrics[self.app_name]["requests_per_second"] and metrics[self.app_name]["mean_request_time"] and metrics[self.app_name]["cpu_usage"]:
-            #     app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas, app_name=self.app_name).action()
-            #     n_instances_app = app_decision.get("action")
-            # else:
-            #     n_instances_app = app_replicas
-            
-            n_instances_app = app_replicas
+            if metrics[self.app_name]["requests_per_second"] and metrics[self.app_name]["mean_request_time"] and metrics[self.app_name]["cpu_usage"]:
+                app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas, app_name=self.app_name).action()
+                n_instances_app = app_decision.get("action")
+            else:
+                n_instances_app = app_replicas
             
             # Only scale if there's a change needed
             if n_instances_app != app_replicas:

@@ -156,4 +156,5 @@ def convert_numpy_types(obj):
     return obj
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # Development server only
+    app.run(host='0.0.0.0', port=5000, debug=True)

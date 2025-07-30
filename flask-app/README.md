@@ -29,26 +29,19 @@ minikube start --nodes=1
 # If you need to rebuild and restart after changes:
 ./restart.sh
 ```
+
+### 2. Port Forwarding for Local Development
+```bash
 # API Gateway
 kubectl port-forward service/api-gateway-service 5000:5000
-
-# Alternatively, you can run the commands manually:
-```bash
-# Build images directly in Minikube's Docker daemon
-minikube image build -t flask-app1:latest -f Dockerfile-app1 . --all
-minikube image build -t flask-app2:latest -f Dockerfile-app2 . --all
-minikube image build -t flask-app-gateway:latest -f Dockerfile-gateway . --all
-
-# Apply the Kubernetes manifests
-kubectl apply -f rbac.yaml
-kubectl apply -f flask-app.yaml
+# Prometheus
+kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 9090
+# Loki
+kubectl port-forward service/loki 3100:3100
 ```
 
 ### 2. Verify Deployment [Optional]
 ```bash
-# Check events in case of error
-kubectl get events
-
 # Check nodes
 kubectl get nodes
 
@@ -60,48 +53,36 @@ kubectl get pods -o wide
 
 # Check service status
 kubectl get services
-```
 
-### 3. Access the Application
-```bash
-minikube service api-gateway-service --url
-```
-
-## Monitoring Setup
-
-### 1. Set Up Prometheus
-```bash
-kubectl create namespace monitoring
-
-helm install prometheus prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
-  --set grafana.enabled=false \
-  --set alertmanager.enabled=false
-
-# Add label (in case is not already added)
-kubectl label pods -l app=flask-app-1 monitoring=true
-kubectl label pods -l app=flask-app-2 monitoring=true
-
+# Check monitoring pods
 kubectl get pods -n monitoring
-```
-
-### 2. Set Up Loki
-```bash
-# Apply Loki configurations
-kubectl apply -f loki-config.yaml
-kubectl apply -f loki-deployment.yaml
 
 # Verify Loki deployment
 kubectl get pods -l app=loki
 
-# Stream logs in real-time
-kubectl logs -f <loki-pod-name>
+# View logs in real-time
+kubectl logs --timestamps=true <pod-name>
 
-# Restart
-kubectl delete -f loki-deployment.yaml
-kubectl apply -f loki-config.yaml
-kubectl apply -f loki-deployment.yaml
+# Get detailed information about a pod
+kubectl describe pod <pod-name>
+
+# Get service details
+kubectl get svc
+
+# Check deployment status
+kubectl rollout status deployment/flask-app
+
+```
+
+### 3. Access the Application
+The API Gateway provides the following endpoints:
+
+- `GET /` - Health check endpoint
+- `POST /run-fire-detector` - Run the fire detection model
+
+```bash
+# Example using curl
+curl -X POST http://localhost:5000/run-fire-detector
 ```
 
 ## Application Architecture
@@ -120,34 +101,6 @@ The communication flow is:
 - Gateway receives response from App 2
 - Results returned to user through the API Gateway
 
-## Gateway Endpoints
-
-The API Gateway provides the following endpoints:
-
-- `GET /` - Health check endpoint
-- `GET /run-fire-detector` - Run the fire detection model training
-
-
-### View Application Logs
-```bash
-# View logs in real-time
-kubectl logs --timestamps=true <pod-name>
-
-### Common Commands
-```bash
-# Get detailed information about a pod
-kubectl describe pod <pod-name>
-
-# Get service details
-kubectl get svc
-
-# Check deployment status
-kubectl rollout status deployment/flask-app
-
-# Scale deployment
-kubectl scale deployment flask-app --replicas=3
-```
-
 ## Cleanup
 ```bash
 kubectl delete -f flask-app.yaml
@@ -160,7 +113,6 @@ minikube delete
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [Prometheus Documentation](https://prometheus.io/docs/)
-- [Agent Setup and Monitoring](README_AGENT.MD)
 
 ## Design Time to Kubernetes Conversion
 
@@ -190,14 +142,10 @@ This script maps the computational layers defined in `design_time.json` to Kuber
 - Also check when the action returns an error or -1.
 - Run with a real workload from JMeter.
 - What about the checkpoints and warmup excutions.
-- Share how to generate this plots with thw worlkload and utilizatio with the metrics.
 - what is the difference between service time and response time. How is computed the service time.
-- The readmes of test plans are for JMETER?
 
 
-- How the utilization should be calculated with prometheus. It is generating problems when consulting for short intervals.
 - Implement the response time (instead of the service time as currently done).
-- Consider for the last time that we have the API GATEWAY. Should we measure the queue time for the gateway?
 - Pending: How to calculate the request time for the API Gateway.
 - Why service time is changing?
 - Adjust constants metrics for pressure, demand, threshold.
