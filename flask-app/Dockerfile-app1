@@ -3,7 +3,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY app1.py .
+COPY gunicorn_config.py .
 COPY Training/ ./Training/
 ENV FLASK_APP=app1.py
-ENV FLASK_DEBUG=1
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]
+EXPOSE 5000
+CMD ["gunicorn", "--config", "gunicorn_config.py", "app1:app"]
