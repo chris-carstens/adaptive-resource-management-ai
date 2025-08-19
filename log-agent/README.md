@@ -10,17 +10,14 @@ pip install -r requirements.txt
 ## Agent Configuration
 
 ### 1. Environment Variables
-```bash
-export PROMETHEUS_URL="http://localhost:9090"
-export LOKI_URL="http://localhost:3100"
-export SCALE_KUBERNETES_URL="http://localhost:5000"
-```
+Set all the env variables defined in the config.py file
 
 ### 2. Run the Agent
 
 #### Basic usage:
 ```bash
 # Specify a custom time window in seconds, which is is the window for collecting metrics from now to the past
+python3 agent.py --app flask-app-1 --time-window 5.0
 python3 agent.py --app flask-app-2 --time-window 5.0
 
 # Get help on available arguments

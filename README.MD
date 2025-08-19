@@ -29,6 +29,20 @@ The project is organized into the following main components:
 4. Follow the RL Agent / FIGARO setup instructions
 5. Run JMeter tests to simulate load on the application
 
+So, the flow to run a test in the project is:
+1. Start the Flask Application
+2. Start RL/Figaro Agent
+3. Start the Log Agent for app 1
+4. Start the Log Agent for app 2
+5. Run JMeter to generate load
+6. Check and move the logs and metrics collected by the Log Agent
+7. Run jupyter notebook to plot the results
+
+# TODO:
+CALCULATE REAL DEMAND
+REVIEW FORMULAS IN LOG AGENT TO INTERACT WITH RL AGENT
+SAVE RESULTS AND PLOT ONE VERSION WITH 6 REQUESTS BY MINUTE AND OTHER WITH 3 REQUESTS BY MINUTE
+
 ### Port Forwarding for Local Development
 
 ```bash

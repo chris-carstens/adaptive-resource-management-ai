@@ -45,7 +45,7 @@ def action():
             "error": f"Missing required fields: {', '.join(missing_fields)}"
         }), 400
     
-    decision = random.randint(1, 3)
+    decision = 1
     
     return jsonify({
         "action": decision,

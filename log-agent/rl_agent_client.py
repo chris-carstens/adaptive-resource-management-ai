@@ -45,6 +45,7 @@ class RLAgentClient:
         return self.metrics["requests_per_second"]
 
     def _demand(self):
+        # TODO: Calculate demand
         return self.demand
 
     def _response_time(self):
