@@ -13,6 +13,10 @@ kubectl apply -f flask-app.yaml
 # Prometheus setup
 kubectl create namespace monitoring
 
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+helm repo update
+
 helm install prometheus prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
   --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \

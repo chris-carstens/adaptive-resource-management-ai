@@ -4,6 +4,7 @@
 - Minikube installed
 - Docker installed
 - kubectl installed
+- Helm installed
 - Python installed
 
 ## Flask Applications Setup
