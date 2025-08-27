@@ -34,7 +34,7 @@ So, the flow to run a test in the project is:
 2. Start RL/Figaro Agent
 3. Start the Log Agent for app 1
 4. Start the Log Agent for app 2
-5. Run JMeter to generate load
+5. Run the requests generator
 6. Check and move the logs and metrics collected by the Log Agent
 7. Run jupyter notebook to plot the results
 
@@ -42,6 +42,9 @@ So, the flow to run a test in the project is:
 CALCULATE REAL DEMAND
 REVIEW FORMULAS IN LOG AGENT TO INTERACT WITH RL AGENT
 SAVE RESULTS AND PLOT ONE VERSION WITH 6 REQUESTS BY MINUTE AND OTHER WITH 3 REQUESTS BY MINUTE
+CHECK MEMORY PROBLEMS DELETING IMAGES AND UPDATING THE PORTION OF IMAGES USED
+SAVE LOGS AND RESULTS FROM JM IN THE SAME FOLDER INSIDE THE APP
+
 
 ### Port Forwarding for Local Development
 

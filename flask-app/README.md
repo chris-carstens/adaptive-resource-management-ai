@@ -17,7 +17,7 @@ chmod +x restart.sh
 
 # Start Minikube with default resources 
 # Note: Default resources vary by driver and system but are typically 2 CPUs and 4GB memory
-minikube start --nodes=1
+minikube start
 
 # To customize resources and other configurations, use:
 # minikube start --nodes=1 --cpus=2 --memory=4096MB --disk-size=20GB --driver=docker

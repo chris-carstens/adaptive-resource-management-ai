@@ -34,6 +34,7 @@ class RLAgentClient:
         return self._response_time() / self.response_time_threshold
 
     def _queue_length_dominant(self):
+        # TODO: Check always > 0
         # TODO: CONFIRM. How do we define a component here? Is it just one component in each flask app ane calculated separately?
         return (self._response_time() - self._demand()) / self._demand()
     

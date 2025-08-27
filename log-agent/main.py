@@ -103,7 +103,7 @@ class LogAgent:
             'total_arrived_requests': len(request_times),
             'arrival_rate': len(request_times) / self.time_window,
             'requests_per_second': self._calculate_request_rate(completed_requests),
-            "cpu_usage": self.prometheus_client.get_pod_cpu_usage(application=application, time_window=self.time_window),
+            "cpu_usage": self.prometheus_client.get_pod_cpu_usage(application=application, time_window=self.time_window), # TODO: Check if keep fixed in 5 seconds
             'request_times': formatted_times
         }
 
@@ -192,11 +192,14 @@ Requests per Second: {metrics['requests_per_second']}
 
             # Get the current status to determine current replicas
             status = self.scale_kubernetes_client.get_scale_status()
+
             if not status:
                 print("Error: Unable to retrieve scaling status.")
                 time.sleep(CONFIG['query_interval'])
                 continue
             print(f"Current scaling status: {status}")
+
+
             app_replicas = status.get(self.app_name).get('instances')
             if metrics[self.app_name].get("requests_per_second", 0) > 0 and metrics[self.app_name].get("mean_request_time", 0) > 0 and metrics[self.app_name].get("cpu_usage", 0) > 0:
                 app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas, app_name=self.app_name).action()
@@ -227,6 +230,7 @@ Requests per Second: {metrics['requests_per_second']}
                 "gateway_mean_response_time": gateway_app_metrics.get('mean_response_time', 0)
             }
             self.instance_history.append(history_entry)
+
             # Write updated history to JSON file
             try:
                 with open(instance_history_file, 'w') as f:
@@ -242,10 +246,10 @@ Requests per Second: {metrics['requests_per_second']}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Log Agent for monitoring and scaling applications')
-    parser.add_argument('--app', type=str, default="app1",
-                        help='Application name to monitor (default: app1)')
-    parser.add_argument('--time-window', type=float, default=10.0,
-                        help='Time window in seconds for metrics collection (default: 10.0)')
+    parser.add_argument('--app', type=str,
+                        help='Application name to monitor')
+    parser.add_argument('--time-window', type=float,
+                        help='Time window in seconds for metrics collection')
     args = parser.parse_args()
     print(f"Starting Log Agent for application: {args.app}")
     

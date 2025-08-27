@@ -15,7 +15,7 @@ This API receives training data and returns a random decision between 1 and 3.
 pip install -r requirements.txt
 
 # Run the Flask application
-python app.py
+python3 main.py
 ```
 
 

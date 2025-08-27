@@ -17,11 +17,8 @@ Set all the env variables defined in the config.py file
 #### Basic usage:
 ```bash
 # Specify a custom time window in seconds, which is is the window for collecting metrics from now to the past
-python3 agent.py --app flask-app-1 --time-window 5.0
-python3 agent.py --app flask-app-2 --time-window 5.0
-
-# Get help on available arguments
-python3 agent.py --help
+python3 main.py --app flask-app-1 --time-window 60.0
+python3 main.py --app flask-app-2 --time-window 60.0
 ```
 
 ## Troubleshooting

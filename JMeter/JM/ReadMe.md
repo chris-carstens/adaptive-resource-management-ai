@@ -17,8 +17,6 @@ docker build -t jmeter:latest .
 docker run --rm -v ~/jmeter_results:/jmeter/results -v ~/jmeter_logs:/jmeter/logs jmeter:latest -n -t /jmeter/scripts/jmeterConfigurationFile.jmx -l /jmeter/results/results.jtl -j /jmeter/logs/jmeter.log
 ```
 
-docker run --rm jmeter:latest -n -t /jmeter/scripts/jmeterConfigurationFile.jmx
-
 docker run --rm -it curlimages/curl curl http://host.docker.internal:5000/run-fire-detector
 
 4. Generate csv file from JTL results

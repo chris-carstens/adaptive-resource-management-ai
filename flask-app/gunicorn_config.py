@@ -8,7 +8,7 @@ backlog = 2048
 workers = multiprocessing.cpu_count()  # Async workers
 worker_class = "gevent"  # Async for processor sharing
 worker_connections = 1000
-timeout = 30
+timeout = 300
 keepalive = 5
 
 # Gevent-specific settings for processor sharing
