@@ -44,12 +44,12 @@ def action():
         return jsonify({
             "error": f"Missing required fields: {', '.join(missing_fields)}"
         }), 400
-    
-    decision = 1
-    
+
+    decision = random.randint(1, 3)
+
     return jsonify({
         "action": decision,
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5100)
+    app.run(host='0.0.0.0', port=5001)

@@ -9,6 +9,7 @@ This API receives training data and returns a random decision between 1 and 3.
 ## Quick Start
 
 ### Running Locally
+Change the port in the `app.run` line if needed.
 
 ```bash
 # Install requirements
