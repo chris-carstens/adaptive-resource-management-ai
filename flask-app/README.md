@@ -5,7 +5,6 @@
 - Docker installed
 - kubectl installed
 - Helm installed
-- Python installed
 
 ## Flask Applications Setup
 
@@ -15,19 +14,13 @@
 chmod +x setup.sh
 chmod +x restart.sh
 
-# Start Minikube with default resources 
-# Note: Default resources vary by driver and system but are typically 2 CPUs and 4GB memory
+# Start Minikube
 minikube start
 
-# To customize resources and other configurations, use:
-# minikube start --nodes=1 --cpus=2 --memory=4096MB --disk-size=20GB --driver=docker
-
-# To check allocated resources after starting:
-# kubectl get nodes -o=jsonpath="{.items[0].status.capacity}"
-
+# Run setup script to build Docker images and deploy the application
 ./setup.sh
 
-# If you need to rebuild and restart after changes:
+# If you need to rebuild and restart after changes
 ./restart.sh
 ```
 
@@ -43,36 +36,14 @@ kubectl port-forward service/loki 3100:3100
 
 ### 2. Verify Deployment [Optional]
 ```bash
-# Check nodes
-kubectl get nodes
-
-# Check deployment status
-kubectl get deployments
-
 # Check if pods are running
 kubectl get pods -o wide
 
 # Check service status
 kubectl get services
 
-# Check monitoring pods
-kubectl get pods -n monitoring
-
-# Verify Loki deployment
-kubectl get pods -l app=loki
-
 # View logs in real-time
 kubectl logs --timestamps=true <pod-name>
-
-# Get detailed information about a pod
-kubectl describe pod <pod-name>
-
-# Get service details
-kubectl get svc
-
-# Check deployment status
-kubectl rollout status deployment/flask-app
-
 ```
 
 ### 3. Access the Application
@@ -82,7 +53,6 @@ The API Gateway provides the following endpoints:
 - `POST /run-fire-detector` - Run the fire detection model
 
 ```bash
-# Example using curl
 curl -X POST http://localhost:5000/run-fire-detector
 ```
 
@@ -114,45 +84,3 @@ minikube delete
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [Prometheus Documentation](https://prometheus.io/docs/)
-
-## Design Time to Kubernetes Conversion
-
-You can convert the design time model (JSON) to Kubernetes manifest files using the provided script:
-
-```bash
-# Install required libraries
-pip install pyyaml
-
-# Make the conversion script executable
-chmod +x convert_design_to_k8s.py
-
-# Run the conversion
-python3 convert_design_to_k8s.py
-
-# Apply the generated manifest
-kubectl apply -f generated-flask-app.yaml
-```
-
-This script maps the computational layers defined in `design_time.json` to Kubernetes nodes and components to deployments, following the compatibility matrix constraints.
-
-
-- Verify the metric calculations.
-- Try a loop with real values using this calculations comparing with the group.
-- Check the point that they mentioned about avoiding the delay.
-- Case that the number of pods is above the limit.
-- Also check when the action returns an error or -1.
-- Run with a real workload from JMeter.
-- What about the checkpoints and warmup excutions.
-- what is the difference between service time and response time. How is computed the service time.
-
-
-- Implement the response time (instead of the service time as currently done).
-- Pending: How to calculate the request time for the API Gateway.
-- Why service time is changing?
-- Adjust constants metrics for pressure, demand, threshold.
-- Calculate the demmand.
-
-Meeting:
-- Tune the values like demand and threshold for the pressure to try final version of FIGARO.
-- Implement the response time with the value that comes from JMETER.
-- Why setvice time is changing?
