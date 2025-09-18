@@ -1,6 +1,7 @@
 # Load Test Script
 
-Generate uniform POST requests.
+Generate POST requests to test the defined endpoint of the Flask application.
+Requests follow an exponential distribution to simulate real-world traffic.
 
 ## Setup
 
@@ -18,7 +19,3 @@ Edit `main.py` parameters:
 ```bash
 python3 main.py
 ```
-
-## Output
-
-Results saved to `results/timing_results_<timestamp>.json`
