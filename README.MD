@@ -32,8 +32,8 @@ The project is organized into the following main components:
 So, the flow to run a test in the project is:
 1. Start the Flask Application
 2. Start the Agent
-3. Start the Log Agent for app 1
-4. Start the Log Agent for app 2
+3. Start the Log Agent for component 1
+4. Start the Log Agent for component 2
 5. Run the requests generator
 6. Check the logs and metrics collected by the Log Agent
 7. Run jupyter notebook to plot the results
