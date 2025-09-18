@@ -34,7 +34,7 @@ kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 909
 kubectl port-forward service/loki 3100:3100
 ```
 
-### 2. Verify Deployment [Optional]
+### 3. Verify Deployment [Optional]
 ```bash
 # Check if pods are running
 kubectl get pods -o wide
@@ -46,7 +46,7 @@ kubectl get services
 kubectl logs --timestamps=true <pod-name>
 ```
 
-### 3. Access the Application
+### 4. Access the Application
 The API Gateway provides the following endpoints:
 
 - `GET /` - Health check endpoint
