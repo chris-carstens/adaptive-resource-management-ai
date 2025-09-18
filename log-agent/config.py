@@ -12,7 +12,7 @@ CONFIG = {
         'queue_length_dominant_clip_value': 10.0,
         'max_n_replicas': 5,
         'response_time_threshold': {
-            "flask-app-1": os.getenv('FLASK_APP1_THRESHOLD', 1.8),
+            "flask-app-1": os.getenv('FLASK_APP1_THRESHOLD', 2.5),
             "flask-app-2": os.getenv('FLASK_APP2_THRESHOLD', 0.5),
         },
         "demand": {

@@ -10,9 +10,9 @@ pip install -r requirements.txt
 ## Agent Configuration
 
 ### 1. Environment Variables
-Set all the env variables defined in the config.py file
+Check all the env variables default values defined in the config.py file and change them through a .env file if needed.
 
-### 2. Run the Agent
+### 2. Run the Agents
 
 #### Basic usage:
 ```bash
@@ -20,17 +20,3 @@ Set all the env variables defined in the config.py file
 python3 main.py --app flask-app-1 --time-window 60.0 --rl-agent-port 5001
 python3 main.py --app flask-app-2 --time-window 60.0 --rl-agent-port 5002
 ```
-
-## Troubleshooting
-
-### Common Issues
-1. Missing metrics:
-   - Check if Prometheus is running
-   - Verify Prometheus target configuration
-   - Check if metrics endpoint is accessible
-
-2. Can't see logs:
-   - Verify pod is running
-   - Check log configuration in flask-app deployment
-   - Check if Loki is running: `kubectl get pods -l app=loki`
-   - Verify Loki port-forward is active
