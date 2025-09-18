@@ -8,7 +8,7 @@ The project is organized into the following main components:
 
 1. **Flask Application** - A distributed application with microservices that run a pipeline of a ML model. Go to [Flask Application](flask-app/README.md) for more details
 2. **Log Agent** - A monitoring agent that collects metrics and logs from the application. Go to [Log Agent](log-agent/README.md) for more details
-3. **Requests Generator** - A tool for requests injection
+3. **Requests Generator** - A tool for requests injection. Go to [Requests Generator](requests-generator/README.md) for more details
 4. **Random Agent** - A random agent that makes scaling decisions randomly for testing purposes. Same API as Agent API. Go to [Random Agent](random-agent/README.md) for more details
 5. **Agent** - RL API checkpoint for scaling decisions based on metrics. Go to [Agent](agent/README.md) for more details
 
