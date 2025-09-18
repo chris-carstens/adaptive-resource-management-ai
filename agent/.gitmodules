@@ -1,0 +1,10 @@
+[submodule "external/aisprint_space4air"]
+	path = external/aisprint_space4air
+	url = https://gitlab.polimi.it/ai-sprint/space4ai-r-optimizer.git
+[submodule "external/space4air_optimizer"]
+	path = external/space4air_optimizer
+	url = https://github.com/ai-sprint-eu-project/space4ai-r-optimizer
+[submodule "RL4CC"]
+	path = RL4CC
+	url = git@github.com:FFede0/RL4CC.git
+	branch = test-rc

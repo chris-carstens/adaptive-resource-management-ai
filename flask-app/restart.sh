@@ -14,3 +14,6 @@ echo "4. Restarting deployments..."
 kubectl rollout restart deployment flask-app-1
 kubectl rollout restart deployment flask-app-2
 kubectl rollout restart deployment api-gateway
+
+helm upgrade prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \

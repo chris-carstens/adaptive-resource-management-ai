@@ -22,17 +22,30 @@ class PrometheusClient:
             print(f"Error querying Prometheus: {e}")
             return None
 
-    def get_pod_cpu_usage(self, application, time_window):
-        # TODO: CHECK THE TIME
-        """Get CPU usage for all Flask pods directly from the query without calculations"""
+    def get_average_cpu_usage(self, application, time_window):
+        """Get average CPU usage across all pods"""
+        all_pods = self._get_all_pods_cpu_usage(application, time_window)
+        if not all_pods:
+            return 0
+
+        total_usage = sum(pod['usage'] for pod in all_pods)
+        return total_usage / len(all_pods)
+
+
+    def _get_all_pods_cpu_usage(self, application, time_window):
+        """Get CPU usage for all pods of an application"""
         query = f'rate(container_cpu_usage_seconds_total{{pod=~"{application}.*"}}[{int(time_window)}s])'
         result = self.query(query)
-
+        
         if not result or result.get('status') != 'success':
-            return {}
+            return []
         
         metrics = result.get('data', {}).get('result', [])
-        if metrics:
-            # Get last pod with this name. Should be just one pod in the response
-            return float(metrics[-1].get('value', [0, 0])[1])
-        return 0
+        pod_usages = []
+        
+        for metric in metrics:
+            pod_name = metric.get('metric', {}).get('pod', 'unknown')
+            usage = float(metric.get('value', [0, 0])[1])
+            pod_usages.append({'pod': pod_name, 'usage': usage})
+        
+        return pod_usages

@@ -1,0 +1,19 @@
+{
+  "total_requests": 2,
+  "mean_rate": 0.35,
+  "users": 10,
+  "requests": [
+    {
+      "start_time": 1757610449.3405519,
+      "end_time": 1757610450.4895322,
+      "duration": 1.1489803791046143,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757610618.9380815,
+      "end_time": 1757610619.9108765,
+      "duration": 0.9727950096130371,
+      "status_code": 200
+    }
+  ]
+}

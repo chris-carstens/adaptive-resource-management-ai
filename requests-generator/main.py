@@ -1,31 +1,40 @@
-from locust import HttpUser, task, constant_pacing
+from locust import HttpUser, task, between
 import time
 import json
 import os
 import subprocess
 import sys
+import random
 
 # --- Parameters ---
-rate = 0.14      # Requests per second
-T = 180        # Total time in seconds
-users = 3       # Number of concurrent users
+mean_rate = 0.3     # Total mean requests per second across all users
+T = 60 * 10            # Total time in seconds
+users = 10         # Number of concurrent users
 endpoint = "/run-fire-detector"
 host = "http://localhost:5000"
 # ------------------
 
-class SimpleUser(HttpUser):
-    # Set the wait time to achieve the desired request rate
-    wait_time = constant_pacing(1.0 / rate)
+class RealUserBehavior(HttpUser):
+    def wait_time(self):
+        """
+        Exponential distribution for inter-arrival times
+        Rate per user = total_rate / number_of_users
+        """
+        rate_per_user = mean_rate / users
+        # Exponential distribution: mean = 1/lambda, so lambda = 1/mean
+        inter_arrival_time = random.expovariate(rate_per_user)
+        return inter_arrival_time
 
     def on_start(self):
         """Called when a user starts"""
         self.request_data = []
 
     @task
-    def post_request(self):
-        """Sends a POST request to the specified endpoint"""
+    def user_session(self):
+        """Make request with pure exponential inter-arrival times"""
+        # Make the request
         t0 = time.time()
-        with self.client.post(endpoint) as resp:
+        with self.client.post(endpoint, catch_response=True) as resp:
             t1 = time.time()
             self.request_data.append({
                 "start_time": t0,
@@ -33,39 +42,39 @@ class SimpleUser(HttpUser):
                 "duration": t1 - t0,
                 "status_code": resp.status_code
             })
+        # No additional sleep - wait_time() handles exponential inter-arrival times
 
     def on_stop(self):
         """Called when a user stops"""
         os.makedirs("results", exist_ok=True)
-        filename = f"results/timing_results_{int(time.time())}.json"
+        filename = f"results/exponential_timing_results_{int(time.time())}.json"
         with open(filename, "w") as f:
             json.dump({
                 "total_requests": len(self.request_data),
+                "mean_rate": mean_rate,
+                "users": users,
                 "requests": self.request_data
             }, f, indent=2)
         print(f"\nSaved {len(self.request_data)} requests to {filename}")
 
 if __name__ == "__main__":
-    # This block allows running the script directly
-    print(f"Starting Locust test...")
+    print(f"Starting Locust test with exponential distribution...")
     print(f"Target: {host}{endpoint}")
-    print(f"Rate: {rate} req/s")
+    print(f"Mean rate: {mean_rate} req/s across {users} users")
+    print(f"Rate per user: {mean_rate/users:.3f} req/s")
     print(f"Duration: {T}s")
-    print(f"Expected requests: {int(rate * T)}")
+    print(f"Expected total requests: ~{int(mean_rate * T)}")
     
-    # Dynamically set the wait_time on the class before running
-    SimpleUser.wait_time = constant_pacing(1.0 / rate)
-
     # Command to run Locust headless
     cmd = [
         "locust",
         "-f", __file__,
         "--host", host,
-        "-u", str(users),          # Users
-        "-r", "1",          # Spawn rate
-        "-t", f"{T}s",      # Run time
+        "-u", str(users),
+        "-r", "1",              # Spawn rate
+        "-t", f"{T}s",
         "--headless",
-        "--stop-timeout", "1" # Stop quickly after run time
+        "--stop-timeout", "1"
     ]
     
     try:

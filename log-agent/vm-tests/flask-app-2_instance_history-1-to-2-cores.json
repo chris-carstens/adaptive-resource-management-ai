@@ -1,0 +1,159 @@
+{
+  "app_name": "flask-app-2",
+  "history": [
+    {
+      "timestamp": "2025-09-15T10:05:26.864735",
+      "elapsed_seconds": 0,
+      "instances": 1,
+      "cpu_usage": 0.00024131535250908426,
+      "requests_per_second": 0.0,
+      "mean_request_time": 0,
+      "total_arrived_requests": 0,
+      "workload": 0.0,
+      "gateway_mean_response_time": 0
+    },
+    {
+      "timestamp": "2025-09-15T10:06:27.037041",
+      "elapsed_seconds": 60,
+      "instances": 2,
+      "cpu_usage": 0.07489684813753585,
+      "requests_per_second": 0.25,
+      "mean_request_time": 0.1795850912729899,
+      "total_arrived_requests": 15,
+      "workload": 0.25,
+      "gateway_mean_response_time": 0.18981844500491493
+    },
+    {
+      "timestamp": "2025-09-15T10:07:27.171276",
+      "elapsed_seconds": 120,
+      "instances": 2,
+      "cpu_usage": 0.03676715939632007,
+      "requests_per_second": 0.2,
+      "mean_request_time": 0.14898186922073364,
+      "total_arrived_requests": 12,
+      "workload": 0.2,
+      "gateway_mean_response_time": 0.1637265865619366
+    },
+    {
+      "timestamp": "2025-09-15T10:08:27.278298",
+      "elapsed_seconds": 180,
+      "instances": 2,
+      "cpu_usage": 0.016682002954481585,
+      "requests_per_second": 0.2,
+      "mean_request_time": 0.15772640705108643,
+      "total_arrived_requests": 12,
+      "workload": 0.2,
+      "gateway_mean_response_time": 0.17515303691228232
+    },
+    {
+      "timestamp": "2025-09-15T10:09:27.938505",
+      "elapsed_seconds": 240,
+      "instances": 2,
+      "cpu_usage": 0.0257866032458655,
+      "requests_per_second": 0.21666666666666667,
+      "mean_request_time": 0.15177690065824068,
+      "total_arrived_requests": 13,
+      "workload": 0.21666666666666667,
+      "gateway_mean_response_time": 0.1590710053077111
+    },
+    {
+      "timestamp": "2025-09-15T10:10:28.200489",
+      "elapsed_seconds": 301,
+      "instances": 1,
+      "cpu_usage": 0.018994347478423892,
+      "requests_per_second": 0.13333333333333333,
+      "mean_request_time": 0.134882390499115,
+      "total_arrived_requests": 8,
+      "workload": 0.13333333333333333,
+      "gateway_mean_response_time": 0.14129424095153809
+    },
+    {
+      "timestamp": "2025-09-15T10:11:28.263179",
+      "elapsed_seconds": 361,
+      "instances": 1,
+      "cpu_usage": 0.022375185779680146,
+      "requests_per_second": 0.15,
+      "mean_request_time": 0.13155958387586805,
+      "total_arrived_requests": 9,
+      "workload": 0.15,
+      "gateway_mean_response_time": 0.1385196050008138
+    },
+    {
+      "timestamp": "2025-09-15T10:12:28.418041",
+      "elapsed_seconds": 421,
+      "instances": 2,
+      "cpu_usage": 0.039310021372595504,
+      "requests_per_second": 0.23333333333333334,
+      "mean_request_time": 0.20064777987343924,
+      "total_arrived_requests": 14,
+      "workload": 0.23333333333333334,
+      "gateway_mean_response_time": 0.2065232310976301
+    },
+    {
+      "timestamp": "2025-09-15T10:13:28.507102",
+      "elapsed_seconds": 481,
+      "instances": 1,
+      "cpu_usage": 0.021176490363065868,
+      "requests_per_second": 0.18333333333333332,
+      "mean_request_time": 0.1378584558313543,
+      "total_arrived_requests": 11,
+      "workload": 0.18333333333333332,
+      "gateway_mean_response_time": 0.14438542452725497
+    },
+    {
+      "timestamp": "2025-09-15T10:14:28.615275",
+      "elapsed_seconds": 541,
+      "instances": 2,
+      "cpu_usage": 0.021780354924013163,
+      "requests_per_second": 0.21666666666666667,
+      "mean_request_time": 0.13703753398014948,
+      "total_arrived_requests": 13,
+      "workload": 0.21666666666666667,
+      "gateway_mean_response_time": 0.14682399309598482
+    },
+    {
+      "timestamp": "2025-09-15T10:15:28.708985",
+      "elapsed_seconds": 601,
+      "instances": 1,
+      "cpu_usage": 0.03671942513037004,
+      "requests_per_second": 0.15,
+      "mean_request_time": 0.2532053788503011,
+      "total_arrived_requests": 9,
+      "workload": 0.15,
+      "gateway_mean_response_time": 0.281893703672621
+    },
+    {
+      "timestamp": "2025-09-15T10:16:28.810549",
+      "elapsed_seconds": 661,
+      "instances": 1,
+      "cpu_usage": 0.007088412528184254,
+      "requests_per_second": 0.05,
+      "mean_request_time": 0.12546920776367188,
+      "total_arrived_requests": 3,
+      "workload": 0.05,
+      "gateway_mean_response_time": 0.13160252571105957
+    },
+    {
+      "timestamp": "2025-09-15T10:17:29.023488",
+      "elapsed_seconds": 722,
+      "instances": 1,
+      "cpu_usage": 0.000582770528374515,
+      "requests_per_second": 0.0,
+      "mean_request_time": 0,
+      "total_arrived_requests": 0,
+      "workload": 0.0,
+      "gateway_mean_response_time": 0
+    },
+    {
+      "timestamp": "2025-09-15T10:18:29.137790",
+      "elapsed_seconds": 782,
+      "instances": 1,
+      "cpu_usage": 0.000474582280088179,
+      "requests_per_second": 0.0,
+      "mean_request_time": 0,
+      "total_arrived_requests": 0,
+      "workload": 0.0,
+      "gateway_mean_response_time": 0
+    }
+  ]
+}

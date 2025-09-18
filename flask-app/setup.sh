@@ -19,9 +19,6 @@ helm repo update
 
 helm install prometheus prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
-  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
-  --set grafana.enabled=false \
-  --set alertmanager.enabled=false
 
 kubectl label pods -l app=flask-app-1 monitoring=true
 kubectl label pods -l app=flask-app-2 monitoring=true

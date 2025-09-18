@@ -1,0 +1,61 @@
+{
+  "total_requests": 9,
+  "mean_rate": 0.35,
+  "users": 10,
+  "requests": [
+    {
+      "start_time": 1757609320.2638705,
+      "end_time": 1757609321.1626568,
+      "duration": 0.8987863063812256,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609333.788288,
+      "end_time": 1757609334.8187191,
+      "duration": 1.0304310321807861,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609350.4648721,
+      "end_time": 1757609353.0055332,
+      "duration": 2.540661096572876,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609380.238468,
+      "end_time": 1757609393.012712,
+      "duration": 12.7742440700531,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609407.785287,
+      "end_time": 1757609409.1959445,
+      "duration": 1.4106576442718506,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609433.2970245,
+      "end_time": 1757609434.324561,
+      "duration": 1.0275366306304932,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609449.926921,
+      "end_time": 1757609456.3165903,
+      "duration": 6.389669418334961,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609476.8391533,
+      "end_time": 1757609477.7279305,
+      "duration": 0.8887772560119629,
+      "status_code": 200
+    },
+    {
+      "start_time": 1757609478.2087512,
+      "end_time": 1757609479.21435,
+      "duration": 1.005598783493042,
+      "status_code": 200
+    }
+  ]
+}

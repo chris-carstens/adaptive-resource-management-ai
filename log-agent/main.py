@@ -11,9 +11,10 @@ from scale_kubernetes_client import ScaleKubernetesClient
 from config import CONFIG
 
 class LogAgent:
-    def __init__(self, time_window: float, app_name: str):
+    def __init__(self, time_window: float, app_name: str, rl_agent_url: str):
         self.time_window = time_window
         self.app_name = app_name
+        self.rl_agent_url = rl_agent_url
         self.loki_client = LokiClient()
         self.prometheus_client = PrometheusClient()
         self.scale_kubernetes_client = ScaleKubernetesClient()
@@ -52,7 +53,7 @@ class LogAgent:
                 
                 time_str = rest_part.split(" response time: ")[1].split(" seconds")[0]
                 response_time = float(time_str)
-                
+
                 return response_time
             except (ValueError, IndexError):
                 return None
@@ -103,7 +104,7 @@ class LogAgent:
             'total_arrived_requests': len(request_times),
             'arrival_rate': len(request_times) / self.time_window,
             'requests_per_second': self._calculate_request_rate(completed_requests),
-            "cpu_usage": self.prometheus_client.get_pod_cpu_usage(application=application, time_window=self.time_window), # TODO: Check if keep fixed in 5 seconds
+            "cpu_usage": self.prometheus_client.get_average_cpu_usage(application=application, time_window=self.time_window),
             'request_times': formatted_times
         }
 
@@ -123,7 +124,6 @@ class LogAgent:
                     app_response_times.append(response_time)
 
         return {
-                'response_count': len(app_response_times),
                 'mean_response_time': sum(app_response_times) / len(app_response_times) if app_response_times else 0,
             }
 
@@ -165,7 +165,7 @@ Requests per Second: {metrics['requests_per_second']}
             return "\nNo gateway response metrics found.\n"
 
         header = "\nGATEWAY RESPONSE METRICS:\n" + "=" * 30
-        metrics_info = f"\n{gateway_metrics['response_count']} requests, mean: {gateway_metrics['mean_response_time']:.6f}s"
+        metrics_info = f"\nmean: {gateway_metrics['mean_response_time']:.6f}s"
 
         return f"{header}{metrics_info}\n"
         
@@ -178,8 +178,7 @@ Requests per Second: {metrics['requests_per_second']}
         print("=" * 80 + "\n")
         
         metrics = {
-            self.app_name: metrics_app,
-            'gateway_responses': gateway_response_metrics
+            self.app_name: { **metrics_app, **gateway_response_metrics }
         }
         return metrics
 
@@ -195,27 +194,26 @@ Requests per Second: {metrics['requests_per_second']}
 
             if not status:
                 print("Error: Unable to retrieve scaling status.")
-                time.sleep(CONFIG['query_interval'])
                 continue
             print(f"Current scaling status: {status}")
 
 
             app_replicas = status.get(self.app_name).get('instances')
             if metrics[self.app_name].get("requests_per_second", 0) > 0 and metrics[self.app_name].get("mean_request_time", 0) > 0 and metrics[self.app_name].get("cpu_usage", 0) > 0:
-                app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas, app_name=self.app_name).action()
-                n_instances_app = app_decision.get("action")
+                app_decision = RLAgentClient(metrics[self.app_name], n_replicas=app_replicas, app_name=self.app_name, base_url=self.rl_agent_url).action()
+                if app_decision is not None:
+                    n_instances_app = app_decision.get("action")
+                else:
+                    n_instances_app = app_replicas
+                    print("RL Agent failed, keeping current number of instances.")
             else:
                 n_instances_app = app_replicas
-            
             # Only scale if there's a change needed
             if n_instances_app != app_replicas:
                 print(f"Scaling {self.app_name} from {app_replicas} to {n_instances_app} instances")
                 self.scale_kubernetes_client.scale_app(self.app_name, n_instances_app)
                 print(f"Scaling {self.app_name} from {app_replicas} to {n_instances_app} instances")
-            
-            # Add gateway response metrics to history if available
-            gateway_app_metrics = metrics.get('gateway_responses', {})
-            
+        
             # Add current instance data to history
             history_entry = {
                 "timestamp": datetime.now().isoformat(),
@@ -226,8 +224,7 @@ Requests per Second: {metrics['requests_per_second']}
                 "mean_request_time": metrics[self.app_name]["mean_request_time"],
                 "total_arrived_requests": metrics[self.app_name]["total_arrived_requests"],
                 "workload": metrics[self.app_name]["arrival_rate"],
-                "gateway_response_count": gateway_app_metrics.get('response_count', 0),
-                "gateway_mean_response_time": gateway_app_metrics.get('mean_response_time', 0)
+                "gateway_mean_response_time": metrics[self.app_name]["mean_response_time"]
             }
             self.instance_history.append(history_entry)
 
@@ -241,7 +238,7 @@ Requests per Second: {metrics['requests_per_second']}
                 print(f"Instance history updated in {instance_history_file}")
             except Exception as e:
                 print(f"Error writing instance history to file: {e}")
-            time.sleep(CONFIG['query_interval'])
+            time.sleep(self.time_window)
 
 
 if __name__ == "__main__":
@@ -250,7 +247,12 @@ if __name__ == "__main__":
                         help='Application name to monitor')
     parser.add_argument('--time-window', type=float,
                         help='Time window in seconds for metrics collection')
+    parser.add_argument('--rl-agent-port', type=int,
+                        help='RL Agent port')
     args = parser.parse_args()
-    print(f"Starting Log Agent for application: {args.app}")
-    
-    LogAgent(time_window=args.time_window, app_name=args.app).run()
+    time_window=args.time_window
+    app_name=args.app
+    rl_agent_port=args.rl_agent_port
+    print(f"Starting Log Agent for application: {app_name}")
+
+    LogAgent(time_window=time_window, app_name=app_name, rl_agent_url=f"http://localhost:{rl_agent_port}").run()
