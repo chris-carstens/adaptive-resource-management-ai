@@ -8,8 +8,6 @@ output_nas/
 *output_nas/
 output_nas/*
 
-*.txt
-
 */__pycache__/*
 __pycache__/*
 
