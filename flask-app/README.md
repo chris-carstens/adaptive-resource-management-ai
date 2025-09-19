@@ -15,7 +15,7 @@ chmod +x setup.sh
 chmod +x restart.sh
 
 # Start Minikube
-minikube start
+minikube start --cpus=12 --memory=14g # Change the resources if needed by your machine
 
 # Run setup script to build Docker images and deploy the application
 ./setup.sh
