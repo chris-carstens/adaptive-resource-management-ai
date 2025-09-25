@@ -1,11 +1,12 @@
-import multiprocessing
+# import multiprocessing
 
 # Server socket
 bind = "0.0.0.0:5000"
 backlog = 2048
 
 # Worker processes - processor sharing implementation
-workers = multiprocessing.cpu_count()  # Async workers
+# workers = multiprocessing.cpu_count()  # Async workers
+workers = 1  # Only one worker since only one CPU core is available for gateway
 worker_class = "gevent"  # Async for processor sharing
 worker_connections = 1000
 timeout = 300

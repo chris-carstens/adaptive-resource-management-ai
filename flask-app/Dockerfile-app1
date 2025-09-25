@@ -7,4 +7,4 @@ COPY gunicorn_config.py .
 COPY Training/ ./Training/
 ENV FLASK_APP=app1.py
 EXPOSE 5000
-CMD ["gunicorn", "--config", "gunicorn_config.py", "app1:app"]
+CMD ["python", "app1.py"]
