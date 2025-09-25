@@ -9,7 +9,6 @@ import numpy as np
 import logging
 import logging_loki
 import tensorflow as tf
-from tensorflow.keras.metrics import Precision, Recall
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import AdamW
