@@ -1,13 +1,18 @@
+import os
+# Suppress TensorFlow warnings and info messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_TRT_DISABLE_CUDA_LOGGER'] = '1'
+
 from kubernetes import client, config
 from flask import Flask, jsonify, g, request
 import numpy as np
-import os
 import logging
 import logging_loki
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten
 
+tf.get_logger().setLevel('ERROR')
 
 app = Flask(__name__)
 
@@ -96,15 +101,16 @@ def train_model_part1():
         error_msg = f"Failed to load dataset: {str(e)}"
         raise Exception(error_msg)
 
-    train_size = int(len(Training)*.8)
-    test_size = int(len(Training)*.2)
+    dataset_size = tf.data.experimental.cardinality(Training).numpy()
+    train_size = int(dataset_size*.8)
+    test_size = int(dataset_size*.2)
     train = Training.take(train_size)
     test = Training.skip(train_size).take(test_size)
 
     model_part1.fit(train,
                           epochs=1,
                           validation_data=test, 
-                          verbose=0,
+                          verbose=0
     )
 
     def generate_features(dataset):

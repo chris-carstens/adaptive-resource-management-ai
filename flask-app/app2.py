@@ -1,15 +1,20 @@
+import os
+# Suppress TensorFlow warnings and info messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_TRT_DISABLE_CUDA_LOGGER'] = '1'
+
 from kubernetes import client, config
 from flask import Flask, jsonify, request, g
 import numpy as np
 import logging
 import logging_loki
 import tensorflow as tf
-from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
+from tensorflow.keras.metrics import Precision, Recall
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import AdamW
-import os
 
+tf.get_logger().setLevel('ERROR')
 
 app = Flask(__name__)
 
@@ -93,9 +98,6 @@ def train_part2():
 
 def train_model_part2_from_data(train_features, train_labels, test_features, test_labels):
     """Train the second part of the model using data received directly from app1."""
-    # Enable eager execution
-    tf.config.run_functions_eagerly(True)
-
     # Create datasets
     train_dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels)).batch(32)
     test_dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels)).batch(32)
@@ -105,42 +107,26 @@ def train_model_part2_from_data(train_features, train_labels, test_features, tes
     model_part2.add(Dense(8, activation='relu', input_shape=(train_features.shape[1],)))
     model_part2.add(Dense(1, activation='sigmoid'))
 
-    # Compile model
+    # Compile model with all metrics included
     learning_rate = 0.01
     optimizer = AdamW(learning_rate=learning_rate)
     model_part2.compile(optimizer=optimizer, 
                     loss=tf.keras.losses.BinaryCrossentropy(),
-                    metrics=['accuracy'],
-                    run_eagerly=True)
+                    metrics=['accuracy'])
 
-    # Add tensorboard callback
-    logdir='logs_part2'
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
-
-    hist = model_part2.fit(
+    model_part2.fit(
         train_dataset,
         epochs=1,
         validation_data=test_dataset,
-        callbacks=[tensorboard_callback]
+        verbose=0
     )
 
-    # Initialize metrics
-    pre = Precision()
-    re = Recall()
-    acc = BinaryAccuracy()
-
-    # Evaluate metrics on test dataset
-    for features, labels in test_dataset:
-        predictions = model_part2.predict(features)
-        pre.update_state(labels, predictions)
-        re.update_state(labels, predictions)
-        acc.update_state(labels, predictions)
+    # Evaluate metrics on test dataset using built-in evaluate method
+    results = model_part2.evaluate(test_dataset, verbose=0)
 
     return {
         'metrics': {
-            'precision': pre.result().numpy(),
-            'recall': re.result().numpy(),
-            'accuracy': acc.result().numpy()
+            'accuracy': results[1]
         },
     }
 
