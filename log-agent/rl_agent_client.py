@@ -12,11 +12,12 @@ class RLAgentClient:
         self.pressure_clip_value = CONFIG['rl_agent']['pressure_clip_value']
         self.queue_length_dominant_clip_value = CONFIG['rl_agent']['queue_length_dominant_clip_value']
         self.demand = CONFIG['rl_agent']['demand'][app_name]
+        self.max_workload = CONFIG['rl_agent']['max_workload']
 
     def action(self):
         observation = {
             "n_instances": self._normalized_n_replicas(),
-            "workload": self._workload(),
+            "workload": self._normalized_workload(),
             "utilization": self._utilization(),
             "pressure": self._normalized_pressure(),
             "queue_length_dominant": self._normalized_queue_length_dominant(),
@@ -33,14 +34,18 @@ class RLAgentClient:
         except Exception as e:
             print(f"Error calling RL Agent: {e}")
             return None
-    
+
     def _normalized_n_replicas(self):
         return self.n_replicas / self.max_n_replicas
-    
+
     def _normalized_pressure(self):
         """Normalized pressure to [0, 1] range"""
         clipped_pressure = np.clip(self._pressure(), 0, self.pressure_clip_value)
         return clipped_pressure / self.pressure_clip_value
+
+    def _normalized_workload(self):
+        clipped_workload = np.clip(self._workload(), 0, self.max_workload)
+        return clipped_workload / self.max_workload
 
     def _pressure(self):
         # TODO: Check MAX
@@ -52,8 +57,6 @@ class RLAgentClient:
         return clipped_queue_length_dominant / self.queue_length_dominant_clip_value
 
     def _queue_length_dominant(self):
-        # TODO: Check always > 0
-        # TODO: CONFIRM. How do we define a component here? Is it just one component in each flask app ane calculated separately?
         return max(0, (self._response_time() - self._demand()) / self._demand())
 
     def _utilization(self):
