@@ -1,4 +1,4 @@
-from locust import HttpUser, task, between
+from locust import HttpUser, task
 import time
 import json
 import os
@@ -7,9 +7,9 @@ import sys
 import random
 
 # --- Parameters ---
-mean_rate = 0.3     # Total mean requests per second across all users
-T = 60 * 10            # Total time in seconds
-users = 10         # Number of concurrent users
+mean_rate = 0.5     # Total mean requests per second across all users
+T = 60 * 5            # Total time in seconds
+users = 30         # Number of concurrent users
 endpoint = "/run-fire-detector"
 host = "http://localhost:5000"
 # ------------------
@@ -21,7 +21,6 @@ class RealUserBehavior(HttpUser):
         Rate per user = total_rate / number_of_users
         """
         rate_per_user = mean_rate / users
-        # Exponential distribution: mean = 1/lambda, so lambda = 1/mean
         inter_arrival_time = random.expovariate(rate_per_user)
         return inter_arrival_time
 
