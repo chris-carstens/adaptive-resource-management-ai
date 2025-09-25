@@ -41,20 +41,6 @@ class RealUserBehavior(HttpUser):
                 "duration": t1 - t0,
                 "status_code": resp.status_code
             })
-        # No additional sleep - wait_time() handles exponential inter-arrival times
-
-    def on_stop(self):
-        """Called when a user stops"""
-        os.makedirs("results", exist_ok=True)
-        filename = f"results/exponential_timing_results_{int(time.time())}.json"
-        with open(filename, "w") as f:
-            json.dump({
-                "total_requests": len(self.request_data),
-                "mean_rate": mean_rate,
-                "users": users,
-                "requests": self.request_data
-            }, f, indent=2)
-        print(f"\nSaved {len(self.request_data)} requests to {filename}")
 
 if __name__ == "__main__":
     print(f"Starting Locust test with exponential distribution...")
