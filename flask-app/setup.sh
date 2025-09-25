@@ -19,6 +19,10 @@ helm repo update
 
 helm install prometheus prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
+  --set grafana.enabled=false \
+  --set alertmanager.enabled=false \
+  --set prometheus-node-exporter.enabled=false \
+  --set prometheus-pushgateway.enabled=false
 
 kubectl label pods -l app=flask-app-1 monitoring=true
 kubectl label pods -l app=flask-app-2 monitoring=true
@@ -26,3 +30,6 @@ kubectl label pods -l app=flask-app-2 monitoring=true
 # Loki setup
 kubectl apply -f loki-config.yaml
 kubectl apply -f loki-deployment.yaml
+
+minikube addons enable metrics-server
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
