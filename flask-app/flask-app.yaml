@@ -17,13 +17,13 @@ spec:
       - image: flask-app-gateway:latest
         imagePullPolicy: Never
         name: api-gateway
-        # resources:
-        #   limits:
-          #   memory: "1Gi"
-            # cpu: "1000m"
-          # requests:
-            # memory: "1Gi"
-            # cpu: "1000m"
+        resources:
+          limits:
+            memory: "200Mi"
+            cpu: "100m"
+          requests:
+            memory: "200Mi"
+            cpu: "100m"
         ports:
         - containerPort: 5000
           name: http
@@ -70,10 +70,10 @@ spec:
         name: flask-app-1
         resources:
           limits:
-            # memory: "1Gi"
+            memory: "1Gi"
             cpu: "1"
           requests:
-            # memory: "1Gi"
+            memory: "1Gi"
             cpu: "1"
         ports:
         - containerPort: 5000
@@ -111,10 +111,10 @@ spec:
         name: flask-app-2
         resources:
           limits:
-            # memory: "1Gi"
+            memory: "1Gi"
             cpu: "1"
           requests:
-            # memory: "1Gi"
+            memory: "1Gi"
             cpu: "1"
         ports:
         - containerPort: 5000
