@@ -56,3 +56,5 @@ shared_volume/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+minikube-linux-amd64
