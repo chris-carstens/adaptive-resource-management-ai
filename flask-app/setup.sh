@@ -23,8 +23,6 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
 kubectl label pods -l app=flask-app-1 monitoring=true
 kubectl label pods -l app=flask-app-2 monitoring=true
 
-kubectl get pods -n monitoring
-
 # Loki setup
 kubectl apply -f loki-config.yaml
 kubectl apply -f loki-deployment.yaml

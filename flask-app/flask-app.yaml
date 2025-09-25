@@ -71,10 +71,10 @@ spec:
         resources:
           limits:
             # memory: "1Gi"
-            cpu: "1000m"
+            cpu: "1"
           requests:
             # memory: "1Gi"
-            cpu: "1000m"
+            cpu: "1"
         ports:
         - containerPort: 5000
 ---
@@ -112,10 +112,10 @@ spec:
         resources:
           limits:
             # memory: "1Gi"
-            cpu: "1000m"
+            cpu: "1"
           requests:
             # memory: "1Gi"
-            cpu: "1000m"
+            cpu: "1"
         ports:
         - containerPort: 5000
 ---

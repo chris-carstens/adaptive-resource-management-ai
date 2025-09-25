@@ -11,11 +11,15 @@
 ### 1. Run Setup and Start Scripts
 ```bash
 # Make scripts executable
+chmod +x install.sh
 chmod +x setup.sh
 chmod +x restart.sh
 
+# Install Prerequisites
+./install.sh
+
 # Start Minikube
-minikube start --cpus=12 --memory=14g # Change the resources if needed by your machine
+minikube start --cpus=13 --memory=13g # Change the resources if needed by your machine
 
 # Run setup script to build Docker images and deploy the application
 ./setup.sh
@@ -24,7 +28,17 @@ minikube start --cpus=12 --memory=14g # Change the resources if needed by your m
 ./restart.sh
 ```
 
-### 2. Port Forwarding for Local Development
+
+### 2. Verify Deployment [Optional]
+```bash
+# Check if pods are running
+kubectl get pods -o wide
+
+# View logs in real-time
+kubectl logs --timestamps=true <pod-name>
+```
+
+### 3. Port Forwarding for Local Development
 ```bash
 # API Gateway
 kubectl port-forward service/api-gateway-service 5000:5000
@@ -32,18 +46,6 @@ kubectl port-forward service/api-gateway-service 5000:5000
 kubectl port-forward svc/prometheus-kube-prometheus-prometheus -n monitoring 9090
 # Loki
 kubectl port-forward service/loki 3100:3100
-```
-
-### 3. Verify Deployment [Optional]
-```bash
-# Check if pods are running
-kubectl get pods -o wide
-
-# Check service status
-kubectl get services
-
-# View logs in real-time
-kubectl logs --timestamps=true <pod-name>
 ```
 
 ### 4. Access the Application
