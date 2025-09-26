@@ -6,7 +6,7 @@ backlog = 2048
 
 # Worker processes - processor sharing implementation
 # workers = multiprocessing.cpu_count()  # Async workers
-workers = 1  # Only one worker since only one CPU core is available for gateway
+workers = 1  # Only one worker since only one CPU core is set
 worker_class = "gevent"  # Async for processor sharing
 worker_connections = 1000
 timeout = 300
