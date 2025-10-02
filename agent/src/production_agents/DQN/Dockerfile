@@ -7,7 +7,7 @@ COPY ./src/production_agents/DQN/agent_server_DQN.py /app/agent_server_DQN.py
 COPY ./src/production_agents/DQN/production_agent_DQN.py /app/production_agent_DQN.py
 COPY ./RL4CC /app/RL4CC
 COPY ./src /app/src
-COPY evaluation_workload_0.0_1.06_4850.json /app/evaluation_workload_0.0_1.06_4850.json
+COPY evaluation_workload_0.0_2.0_4850.json /app/evaluation_workload_0.0_2.0_4850.json
 
 RUN cd RL4CC && pip3 install .
 

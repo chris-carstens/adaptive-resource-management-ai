@@ -10,23 +10,3 @@ prometheus-client>=0.16.0
 kubernetes>=12.0.0
 gunicorn==21.2.0
 gevent==23.7.0
-ChangeMeSoon2025!
-
-Problems from last time I was working on:
-- First window and first executions where taking way more time to complete
-- Some response times were not making sense according to the configuration and workload
-- Response times were changing highly between executions even with similar workloads
-- The machine had just 4 cores so for high number of pods we had Problems
-
-Solutions:
-- Check the entire configuration:
-- Increased the number of cores of the machine to 15
-- It was freezing the system when running with more cores and running out of memory
-- Checking logs of tensorflow, some changes were made, including avoiding eager execution to silence some problems in the logs
-- I configured previously gunicorn to set the number of workers automatically according to the number of cores,
-but inside kubernetes it does not detect the number of cores of the component, but of the entire machine
-- After the change in gunicorn, everything started to work as expected
-
-Due to some changes I made in the NN, and configuration in general, the demand values changed a little, specially the component 2
-that increased the demand, so for completition ideally we should train with the final configuration and confirm everything is as expected
-but also with these values is working properly due the ranges
