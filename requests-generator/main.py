@@ -1,13 +1,11 @@
 from locust import HttpUser, task
 import time
-import json
-import os
 import subprocess
 import sys
 import random
 
 # --- Parameters ---
-mean_rate = 0.5     # Total mean requests per second across all users
+mean_rate = 1.5     # Total mean requests per second across all users
 T = 60 * 5            # Total time in seconds
 users = 30         # Number of concurrent users
 endpoint = "/run-fire-detector"

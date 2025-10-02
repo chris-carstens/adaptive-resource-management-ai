@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ## Agent Configuration
 
 ### 1. Environment Variables
-Check all the env variables default values defined in the config.py file and change them through a .env file if needed.
+Check all the default values defined in the config.py file. Change them through a .env file if needed, otherwise the default values will be used.
 
 ### 2. Run the Agents
 

@@ -19,7 +19,7 @@ chmod +x restart.sh
 ./install.sh
 
 # Start Minikube
-minikube start --cpus=13 --memory=13g # Change the resources if needed by your machine
+minikube start --cpus=12 --memory=14g # Change the resources if needed by your machine
 
 # Run setup script to build Docker images and deploy the application
 ./setup.sh
@@ -86,3 +86,18 @@ minikube delete
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/docs/)
 - [Prometheus Documentation](https://prometheus.io/docs/)
+
+kubectl top pods -A
+kubectl top node
+
+- free -h
+- was running with gunicorn before, now with python directly to see if that changes memory consumption. It was detecting 12 cores and running out of memory
+- watch kubectl top pods -A
+- watch kubectl top node
+we were having crazy request times and inizializations too longs
+how to normalize workload? by component? also adding the workloads of each pod?
+
+UPDATE PLOT OF SUM OF TIMES
+
+what workload to normalize
+how many workers un unicorn
