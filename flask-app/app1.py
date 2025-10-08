@@ -74,6 +74,7 @@ def train_part1():
 def train_model_part1():
     model_part1 = Sequential()
     model_part1.add(Conv2D(8, (3,3), 1, activation='relu', input_shape=(8,8,3)))
+    model_part1.add(Conv2D(3, (3,3), 1, activation='relu'))
     model_part1.add(MaxPooling2D())
     model_part1.add(Flatten())
 
@@ -93,46 +94,28 @@ def train_model_part1():
         Training = tf.keras.utils.image_dataset_from_directory(
             training_path,
             image_size=(8, 8),
-            batch_size=3,
+            batch_size=21,
         )
-        Training = Training.map(lambda x,y: (x/255, y))
+        images, labels = next(iter(Training.as_numpy_iterator()))
+        images = images / 255.0
 
     except Exception as e:
         error_msg = f"Failed to load dataset: {str(e)}"
         raise Exception(error_msg)
 
-    dataset_size = tf.data.experimental.cardinality(Training).numpy()
-    train_size = int(dataset_size*.8)
-    test_size = int(dataset_size*.2)
-    train = Training.take(train_size)
-    test = Training.skip(train_size).take(test_size)
-
-    model_part1.fit(train,
+    model_part1.fit(images, labels,
                           epochs=1,
-                          validation_data=test, 
+                          batch_size=21,
                           verbose=0
     )
 
-    def generate_features(dataset):
-        all_images = []
-        all_labels = []
-        for images, labels in dataset:
-            all_images.append(images)
-            all_labels.append(labels)
-        all_images = np.concatenate(all_images)
-        all_labels = np.concatenate(all_labels)
-        features = model_part1.predict(all_images, verbose=0)
-        
-        return features, all_labels
+    features = model_part1.predict(images, verbose=0)
 
-    train_features, train_labels = generate_features(train)
-    test_features, test_labels = generate_features(test)
-    
     return {
-        'train_features': train_features,
-        'train_labels': train_labels,
-        'test_features': test_features,
-        'test_labels': test_labels,
+        'train_features': features,
+        'train_labels': labels,
+        'test_features': features,
+        'test_labels': labels,
     }
 
 if __name__ == '__main__':

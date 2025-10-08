@@ -72,71 +72,39 @@ def train_part2():
             'message': 'Part 1 training was not completed successfully'
         }), 400
         
-    train_features = np.array(data['train_features'])
-    train_labels = np.array(data['train_labels'])
-    test_features = np.array(data['test_features'])
-    test_labels = np.array(data['test_labels'])
-            
-    # Run the model training with the received data
-    result = train_model_part2_from_data(
+    train_features = np.array(data['train_features'])[:10]
+    train_labels = np.array(data['train_labels'])[:10]
+    test_features = np.array(data['test_features'])[:10]
+    test_labels = np.array(data['test_labels'])[:10]
+
+    train_model_part2_from_data(
         train_features, 
         train_labels, 
         test_features, 
         test_labels,
     )
 
-    # Convert NumPy types for JSON serialization
-    serializable_result = convert_numpy_types(result)
-
     return jsonify({
         'status': 'success',
         'message': 'Second part training completed',
-        'metrics': serializable_result['metrics'],
     }), 200
 
 
 def train_model_part2_from_data(train_features, train_labels, test_features, test_labels):
-    """Train the second part of the model using data received directly from app1."""
-    # Create datasets
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels)).batch(32)
-    test_dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels)).batch(32)
-
-    # Second half of the model
     model_part2 = Sequential()
-    model_part2.add(Dense(8, activation='relu', input_shape=(train_features.shape[1],)))
+    model_part2.add(Dense(256, activation='relu', input_shape=(train_features.shape[1],)))
     model_part2.add(Dense(1, activation='sigmoid'))
 
-    optimizer = AdamW(learning_rate=0.01)
-    model_part2.compile(optimizer=optimizer, 
+    model_part2.compile(optimizer="adam", 
                     loss=tf.keras.losses.BinaryCrossentropy(),
                     metrics=['accuracy'])
 
-    model_part2.fit(
-        train_dataset,
-        epochs=1,
-        validation_data=test_dataset,
-        verbose=0
+    model_part2.train_on_batch(
+        train_features,
+        train_labels,
     )
 
-    # Evaluate metrics on test dataset using built-in evaluate method
-    results = model_part2.evaluate(test_dataset, verbose=0)
-
-    return {
-        'metrics': {
-            'accuracy': results[1]
-        },
-    }
-
-def convert_numpy_types(obj):
-    if isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, dict):
-        return {key: convert_numpy_types(value) for key, value in obj.items()}
-    elif isinstance(obj, (list, tuple)):
-        return [convert_numpy_types(item) for item in obj]
-    return obj
+    model_part2.predict(test_features, verbose=0)
 
 if __name__ == '__main__':
     # Development server only
