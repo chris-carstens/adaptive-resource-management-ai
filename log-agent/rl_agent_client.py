@@ -57,7 +57,7 @@ class RLAgentClient:
         return clipped_queue_length_dominant / self.queue_length_dominant_clip_value
 
     def _queue_length_dominant(self):
-        return max(0, (self._response_time() - self._demand()) / self._demand())
+        return (self._response_time() - self._demand()) / self._demand()
 
     def _utilization(self):
         return self.metrics["cpu_usage"]
